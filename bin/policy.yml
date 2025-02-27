@@ -1,0 +1,15 @@
+- !host
+  id: pipe
+
+- !variable secret1
+- !variable secret2
+
+- !permit
+  role: !host pipe
+  privilege: [ read, execute ]
+  resource: !variable secret1
+
+- !permit
+  role: !host pipe
+  privilege: [ read, execute ]
+  resource: !variable secret2

@@ -1,0 +1,17 @@
+name: Conjur Pipe
+image: cyberark/conjur-bitbucket-pipe:0.0.1
+description: Fetch secrets from Conjur
+category: Security
+repository: https://bitbucket.org/cyberark/conjur-pipe
+vendor:
+  name: CyberArk
+  website: https://www.cyberark.com
+maintainer:
+  name: CyberArk
+  website: https://www.cyberark.com
+tags:
+    - bitbucket-pipelines
+    - conjur
+    - secrets
+    - credentials
+  

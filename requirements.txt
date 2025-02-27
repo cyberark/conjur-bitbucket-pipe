@@ -1,0 +1,2 @@
+bitbucket-pipes-toolkit==4.*
+conjur-api==0.1.3
