@@ -5,7 +5,9 @@ properties([
   // Include the automated release parameters for the build
   release.addParams(),
   // Dependencies of the project that should trigger builds
-  dependencies([])
+  dependencies([
+    'conjur-enterprise/conjur-api-python'
+  ])
 ])
 
 // Performs release promotion.  No other stages will be run
@@ -16,11 +18,31 @@ if (params.MODE == "PROMOTE") {
     // Any publishing of targetVersion artifacts occur here
     // Anything added to assetDirectory will be attached to the Github Release
 
-    //Note: assetDirectory is on the infrapool agent, not the local Jenkins agent.
+    runSecurityScans(infrapool,
+      image: "registry.tld/conjur-bitbucket-pipeline:${sourceVersion}",
+      buildMode: params.MODE,
+      branch: env.BRANCH_NAME)
+
+    // Pull existing images from internal registry in order to promote
+    infrapool.agentSh """
+      export PATH="release-tools/bin:${PATH}"
+      docker pull registry.tld/conjur-bitbucket-pipeline:${sourceVersion}
+      # Promote source version to target version.
+      summon ./bin/publish.sh --promote --source ${sourceVersion} --target ${targetVersion}
+    """
+
+    dockerImages = "docker-image*.tar"
+    // Place the Docker image(s) onto the Jenkins agent and sign them
+    infrapool.agentGet from: "${assetDirectory}/${dockerImages}", to: "./"
+    signArtifacts patterns: ["${dockerImages}"]
+    // Copy the docker images and signed artifacts (.sig) back to
+    // infrapool and into the assetDirectory for release promotion
+    dockerImageLocation = pwd() + "/docker-image*.tar*"
+    infrapool.agentPut from: "${dockerImageLocation}", to: "${assetDirectory}"
+    // Resolve ownership issue before promotion
+    sh 'git config --global --add safe.directory ${PWD}'
   }
   release.copyEnterpriseRelease(params.VERSION_TO_PROMOTE)
-  // git remote add bitbucket git@bitbucket.org:cyberark1/conjur-pipe.git
-  // git push bitbucket main -f
   return
 }
 
@@ -57,6 +79,14 @@ pipeline {
       }
     }
 
+    stage('Scan for internal URLs') {
+      steps {
+        script {
+          detectInternalUrls()
+        }
+      }
+    }
+
     stage('Get InfraPool ExecutorV2 Agent(s)') {
       steps{
         script {
@@ -74,6 +104,70 @@ pipeline {
         }
       }
     }
+
+    stage('Build') {
+      stages {
+        stage('Build Docker Image') {
+          steps {
+            script {
+              infrapool.agentSh './bin/build.sh'
+            }
+          }
+        }
+        stage('Push images to internal registry') {
+          steps {
+            script {
+              infrapool.agentSh './bin/publish.sh --internal'
+            }
+          }
+        }
+        stage('Scan Docker Image') {
+          steps {
+            script {
+              VERSION = infrapool.agentSh(returnStdout: true, script: 'cat VERSION')
+            }
+            runSecurityScans(infrapool,
+              image: "registry.tld/conjur-bitbucket-pipe:${VERSION}",
+              buildMode: params.MODE,
+              branch: env.BRANCH_NAME)
+          }
+        }
+      }
+    }
+
+    // stage('Run Tests') {
+    //   steps {
+    //     script {
+    //       infrapool.agentSh './bin/test.sh'
+    //     }
+    //   }
+    //   post {
+    //     always {
+    //       infrapool.agentStash name: 'xml-unit-tests', includes: 'test/output/*.xml'
+    //       infrapool.agentStash name: 'coverage', includes: 'coverage.*'
+    //       unstash 'xml-unit-tests'
+    //       unstash 'coverage'
+    //       sh 'find . -iname "*.xml" || true'
+    //       junit 'test/output/**/*.xml'
+    //       cobertura(
+    //         coberturaReportFile: "coverage.xml",
+    //         onlyStable: false,
+    //         failNoReports: true,
+    //         failUnhealthy: true,
+    //         failUnstable: false,
+    //         autoUpdateHealth: false,
+    //         autoUpdateStability: false,
+    //         zoomCoverageChart: true,
+    //         maxNumberOfBuilds: 0,
+    //         lineCoverageTargets: '40, 40, 40',
+    //         conditionalCoverageTargets: '80, 80, 80',
+    //         classCoverageTargets: '80, 80, 80',
+    //         fileCoverageTargets: '80, 80, 80',
+    //       )
+    //       codacy action: 'reportCoverage', filePath: "coverage.xml"
+    //     }
+    //   }
+    // }
     
     stage('Release') {
       when {
@@ -98,6 +192,11 @@ pipeline {
                If your assets are in target on the main Jenkins agent, use:
                  infrapool.agentPut(from: 'target/', to: assetDirectory)
             */
+
+            // Publish will save docker images to the executing directory
+            infrapool.agentSh './bin/publish.sh --edge'
+            // Copy the docker images into the assetDirectory for signing in the promote step
+            infrapool.agentSh "cp -a docker-image*.tar ${assetDirectory}"
           })
         }
       }
@@ -106,6 +205,10 @@ pipeline {
   post {
     always {
       releaseInfraPoolAgent()
+
+      // Resolve ownership issue before running infra post hook
+      sh 'git config --global --add safe.directory ${PWD}'
+      infraPostHook()
     }
   }
 }

@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3-slim
 LABEL maintainer="CyberArk Software Ltd."
 
 RUN groupadd -r pipe && useradd -r -g pipe pipe && \
