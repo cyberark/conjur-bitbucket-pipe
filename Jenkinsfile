@@ -19,6 +19,8 @@ if (params.MODE == "PROMOTE") {
     //Note: assetDirectory is on the infrapool agent, not the local Jenkins agent.
   }
   release.copyEnterpriseRelease(params.VERSION_TO_PROMOTE)
+  // git remote add bitbucket git@bitbucket.org:cyberark1/conjur-pipe.git
+  // git push bitbucket main -f
   return
 }
 
