@@ -86,6 +86,8 @@ if [[ ${PUBLISH_EDGE} = true ]]; then
   )
 
   for tag in "${TAGS[@]}"; do
+    tag_and_push "$IMAGE_NAME:$SOURCE_TAG" "$LOCAL_REGISTRY/$IMAGE_NAME:$tag"
+    # TODO: Disable
     tag_and_push "$IMAGE_NAME:$SOURCE_TAG" "$REGISTRY/$IMAGE_NAME:$tag"
   done
 fi
@@ -105,6 +107,7 @@ if [[ ${PROMOTE} = true ]]; then
   readonly TAGS=(
     "$REMOTE_TAG"
     "latest"
+    "edge"
   )
 
   # Publish images to docker hub

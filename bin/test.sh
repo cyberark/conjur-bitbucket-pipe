@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-pip install -r test/requirements.txt
-pytest -v test/test.py
-# TODO: Coverage w/ pytest-cov
+test_script="
+pip install -r requirements.txt --root-user-action ignore
+coverage run -m unittest && coverage xml
+"
+
+# Run tests and coverage in a Docker container
+docker run --rm \
+  -t \
+  -v "$(pwd):/tests" \
+  -w /tests \
+  python:3-slim \
+    bash -c "$test_script"    

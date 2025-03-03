@@ -135,39 +135,36 @@ pipeline {
       }
     }
 
-    // stage('Run Tests') {
-    //   steps {
-    //     script {
-    //       infrapool.agentSh './bin/test.sh'
-    //     }
-    //   }
-    //   post {
-    //     always {
-    //       infrapool.agentStash name: 'xml-unit-tests', includes: 'test/output/*.xml'
-    //       infrapool.agentStash name: 'coverage', includes: 'coverage.*'
-    //       unstash 'xml-unit-tests'
-    //       unstash 'coverage'
-    //       sh 'find . -iname "*.xml" || true'
-    //       junit 'test/output/**/*.xml'
-    //       cobertura(
-    //         coberturaReportFile: "coverage.xml",
-    //         onlyStable: false,
-    //         failNoReports: true,
-    //         failUnhealthy: true,
-    //         failUnstable: false,
-    //         autoUpdateHealth: false,
-    //         autoUpdateStability: false,
-    //         zoomCoverageChart: true,
-    //         maxNumberOfBuilds: 0,
-    //         lineCoverageTargets: '40, 40, 40',
-    //         conditionalCoverageTargets: '80, 80, 80',
-    //         classCoverageTargets: '80, 80, 80',
-    //         fileCoverageTargets: '80, 80, 80',
-    //       )
-    //       codacy action: 'reportCoverage', filePath: "coverage.xml"
-    //     }
-    //   }
-    // }
+    stage('Run Tests') {
+      steps {
+        script {
+          infrapool.agentSh './bin/test.sh'
+          infrapool.agentStash name: 'coverage', includes: 'coverage.xml'
+        }
+      }
+      post {
+        always {
+          script {
+            unstash 'coverage'
+            cobertura(
+              coberturaReportFile: "coverage.xml",
+              onlyStable: false,
+              failNoReports: true,
+              failUnhealthy: true,
+              failUnstable: false,
+              autoUpdateHealth: false,
+              autoUpdateStability: false,
+              zoomCoverageChart: true,
+              maxNumberOfBuilds: 0,
+              lineCoverageTargets: '40, 40, 40',
+              conditionalCoverageTargets: '80, 80, 80',
+              classCoverageTargets: '80, 80, 80',
+              fileCoverageTargets: '80, 80, 80',
+            )
+          }
+        }
+      }
+    }
     
     stage('Release') {
       when {

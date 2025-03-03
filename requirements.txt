@@ -1,2 +1,6 @@
-bitbucket-pipes-toolkit==4.*
+bitbucket-pipes-toolkit==6.*
 conjur-api==0.1.3
+async-timeout==5.0.*
+
+aiounittest==1.4.*
+coverage==7.6.*
