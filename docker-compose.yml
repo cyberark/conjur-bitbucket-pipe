@@ -22,6 +22,8 @@ services:
       RAILS_ENV: development
     depends_on:
       - postgres
+    ports:
+      - "8888:80"
   
   cli:
     image: ${REGISTRY_URL:-docker.io}/cyberark/conjur-cli:8

@@ -1,34 +1,23 @@
 image:
-  name: python:3.10
-
-test: &test
-  step:
-    name: Test
-    script:
-      - pip install -r test/requirements.txt
-      - pytest -v test/test.py
-    services:
-      - docker
-
-push: &push
-  step:
-    name: Push and Tag
-    image: python:3.10
-    script:
-      - pipe: atlassian/bitbucket-pipe-release:5.7.0
-        variables:
-          REGISTRY_USERNAME: $REGISTRY_USERNAME
-          REGISTRY_PASSWORD: $REGISTRY_PASSWORD
-          IMAGE: $REGISTRY_URL/bitbucketpipelines/$BITBUCKET_REPO_SLUG
-          REGISTRY_URL: $REGISTRY_URL
-          DOCKER_BUILD_PLATFORMS: "linux/arm64,linux/amd64"
-    services:
-      - docker
+  name: atlassian/default-image:4
 
 pipelines:
   default:
-  - <<: *test
-  branches:
-    master:
-    - <<: *test
-    - <<: *push
+    - step:
+        name: 'Test pipe'
+        script:
+          - cd bin
+          - ./start-conjur.sh
+          - docker-compose ps
+          - pipe_api_key=$(docker-compose exec conjur conjurctl role retrieve-key conjur:host:pipe | tr -d '\r')
+          - export CONJUR_API_KEY=$pipe_api_key
+          - pipe: docker://cyberark/conjur-bitbucket-pipe:edge
+            variables:
+              CONJUR_URL: 'http://host.docker.internal:8888'
+              CONJUR_ACCOUNT: 'conjur'
+              SECRETS: 'secret1,secret2'
+              CONJUR_AUTHN_LOGIN: 'host/pipe'
+              CONJUR_API_KEY: $CONJUR_API_KEY
+        services:
+          - docker
+        oidc: true

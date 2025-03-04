@@ -1,3 +1,4 @@
+import asyncio
 import os
 from unittest import mock
 from unittest.mock import patch
@@ -30,7 +31,9 @@ class TestPipe(AsyncTestCase):
     # Mock the Conjur client's get_many method and test that it is called with the correct arguments
     client = mock.MagicMock(spec=Client)
     with patch.object(client, 'get_many') as mock_get_many:
-      mock_get_many.return_value = {'secret1': 'value1', 'secret2': 'value2'}
+      ret = asyncio.Future()
+      ret.set_result({'secret1': 'value1', 'secret2': 'value2'})
+      mock_get_many.return_value = ret
       secrets = await ConjurPipe.fetch_secrets(client, ['secret1', 'secret2'])
       mock_get_many.assert_called_once()
       self.assertEqual(secrets, {'secret1': 'value1', 'secret2': 'value2'})

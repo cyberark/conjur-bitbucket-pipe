@@ -116,12 +116,4 @@ if [[ ${PROMOTE} = true ]]; then
     tag_and_push "${LOCAL_REGISTRY}/$IMAGE_NAME:$SOURCE_TAG" "$REGISTRY/$IMAGE_NAME:$tag"
   done
 
-  mirror_to_bitbucket_repo
-
 fi
-
-function mirror_to_bitbucket_repo() {
-    # TODO: Authenticate with Bitbucket
-    git remote add bitbucket git@bitbucket.org:cyberark1/conjur-pipe.git
-    git push bitbucket main -f
-}

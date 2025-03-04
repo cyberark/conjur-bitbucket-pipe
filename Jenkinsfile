@@ -43,6 +43,10 @@ if (params.MODE == "PROMOTE") {
     sh 'git config --global --add safe.directory ${PWD}'
   }
   release.copyEnterpriseRelease(params.VERSION_TO_PROMOTE)
+
+  //TODO: Authenticate to Bitbucket
+  // git remote add bitbucket git@bitbucket.org:cyberark1/conjur-pipe.git
+  // git push bitbucket main -f
   return
 }
 

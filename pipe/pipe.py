@@ -76,7 +76,7 @@ class ConjurPipe(Pipe):
 
   @staticmethod
   async def fetch_secrets(client: Client, secrets: List[str]):
-    return client.get_many(*secrets)
+    return await client.get_many(*secrets)
 
   @staticmethod
   def writeSecrets(secrets: dict, dir: str = None):

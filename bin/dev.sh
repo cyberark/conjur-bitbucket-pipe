@@ -3,17 +3,17 @@
 cd "$(dirname "$0")"
 . ./utils.sh
 
-docker compose down --remove-orphans
+docker-compose down --remove-orphans
 
 source ./start-conjur.sh
 
-docker compose build pipe
-docker compose up --no-deps -d pipe
+docker-compose build pipe
+docker-compose up --no-deps -d pipe
 
 # Start interactive container
-docker exec -it \
+docker-compose exec -it \
   -e CONJUR_API_KEY \
-  "$(docker compose ps -q pipe)" /bin/bash
+  pipe /bin/bash
 
 # Now you can run:
-#   python pipe.py
+#   python pipe/pipe.py
