@@ -5,19 +5,17 @@ pipelines:
   default:
     - step:
         name: 'Test pipe'
+        oidc: true
         script:
           - cd bin
           - ./start-conjur.sh
-          - docker-compose ps
-          - pipe_api_key=$(docker-compose exec conjur conjurctl role retrieve-key conjur:host:pipe | tr -d '\r')
-          - export CONJUR_API_KEY=$pipe_api_key
           - pipe: docker://cyberark/conjur-bitbucket-pipe:edge
             variables:
-              CONJUR_URL: 'http://host.docker.internal:8888'
+              CONJUR_URL: 'http://$BITBUCKET_DOCKER_HOST_INTERNAL:8888'
               CONJUR_ACCOUNT: 'conjur'
+              CONJUR_SERVICE_ID: 'bitbucket'
               SECRETS: 'secret1,secret2'
-              CONJUR_AUTHN_LOGIN: 'host/pipe'
-              CONJUR_API_KEY: $CONJUR_API_KEY
+        after-script:
+          - docker-compose logs
         services:
           - docker
-        oidc: true

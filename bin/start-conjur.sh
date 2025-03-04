@@ -35,9 +35,10 @@ main() {
   docker-compose exec cli conjur variable set -i secret1 -v "SuperSecret"
   docker-compose exec cli conjur variable set -i secret2 -v "AnotherSecret"
 
-  # Export Pipe API key
-  pipe_api_key=$(docker-compose exec conjur conjurctl role retrieve-key conjur:host:pipe | tr -d '\r')
-  export CONJUR_API_KEY="$pipe_api_key"
+  # Set the Bitbucket OIDC provider configuration
+  docker-compose exec cli conjur variable set -i conjur/authn-jwt/bitbucket/provider-uri -v "https://api.bitbucket.org/2.0/workspaces/cyberark1/pipelines-config/identity/oidc"
+  docker-compose exec cli conjur variable set -i conjur/authn-jwt/bitbucket/token-app-property -v "repositoryUuid"
+  docker-compose exec cli conjur variable set -i conjur/authn-jwt/bitbucket/identity-path -v "conjur/authn-jwt/bitbucket/pipelines"
 }
 
 main

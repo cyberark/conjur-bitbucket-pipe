@@ -13,8 +13,6 @@ function announce() {
 function teardown {
   docker-compose down -v
   docker-compose down --remove-orphans
-  unset API_PKGS
-  unset API_TESTS
 }
 
 failed() {

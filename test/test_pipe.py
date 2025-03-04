@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from aiounittest import AsyncTestCase
 from conjur_api import Client
-from conjur_api.providers import AuthnAuthenticationStrategy
+from conjur_api.providers import JWTAuthenticationStrategy
 
 from pipe.pipe import ConjurPipe, PipeConfig
 
@@ -15,9 +15,9 @@ class TestPipe(AsyncTestCase):
     config = PipeConfig(
       conjur_url='https://conjur.example.com',
       conjur_account='myaccount',
-      conjur_authn_login='host/myhost',
-      conjur_api_key='apikey',
-      secrets=''
+      conjur_service_id='bitbucket',
+      jwt='jwt-content',
+      secrets=[]
     )
 
     client = ConjurPipe.create_conjur_client(config)
@@ -25,7 +25,8 @@ class TestPipe(AsyncTestCase):
     self.assertIsInstance(client, Client)
     self.assertEqual(client.connection_info.conjur_url, 'https://conjur.example.com')
     self.assertEqual(client.connection_info.conjur_account, 'myaccount')
-    self.assertIsInstance(client._api.authn_strategy, AuthnAuthenticationStrategy)
+    self.assertEqual(client.connection_info.service_id, 'bitbucket')
+    self.assertIsInstance(client._api.authn_strategy, JWTAuthenticationStrategy)
 
   async def test_fetch_secrets(self):
     # Mock the Conjur client's get_many method and test that it is called with the correct arguments
