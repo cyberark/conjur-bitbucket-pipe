@@ -28,6 +28,7 @@
           # These should match the values provided by Bitbucket in
           # "Repository Settings" > "Pipelines" > "OopenID Connect"
           authn-jwt/bitbucket/repositoryUuid: "{7c459824-f46b-48dc-9f29-e23b6f8a2655}"
+          authn-jwt/bitbucket/workspaceUuid: "{11d955fb-a20a-4969-a1f9-dc86b13622f4}"
           authn-jwt/bitbucket/aud: "ari:cloud:bitbucket::workspace/11d955fb-a20a-4969-a1f9-dc86b13622f4"
 
 # Add the test pipeline to the group that can authenticate using authn-jwt/bitbucket

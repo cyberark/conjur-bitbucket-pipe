@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 from unittest import mock
 from unittest.mock import patch
@@ -38,27 +39,66 @@ class TestPipe(AsyncTestCase):
       secrets = await ConjurPipe.fetch_secrets(client, ['secret1', 'secret2'])
       mock_get_many.assert_called_once()
       self.assertEqual(secrets, {'secret1': 'value1', 'secret2': 'value2'})
+
+  async def test_fetch_secrets_invalid_secret_names(self):
+    invalid_secret_names = [
+      'contains spaces',
+      '8numeric',
+      'quote"char"',
+      '<special>chars',
+      'trailing_space ',
+      ' leading_space',
+      'equal=sign',
+      'dollar$sign',
+      'hypen-sign',
+    ]
+
+    client = mock.MagicMock(spec=Client)
+    with patch.object(client, 'get_many') as mock_get_many:
+      for secret_name in invalid_secret_names:
+        with self.assertRaises(ValueError) as err:
+          await ConjurPipe.fetch_secrets(client, [secret_name])
+        self.assertIn("Unsupported secret name " + json.dumps(secret_name), str(err.exception))
+      
+      mock_get_many.assert_not_called()
     
     # TODO: Test failure cases
 
   def test_write_secrets(self):
-    secrets = {'secret1': 'value1', 'secret2': 'value2'}
+    # Create a dictionary of secrets with some special characters
+    secrets = {
+      'secret1': 'value 1',
+      'secret2': 'value=2',
+      'secret3': 'value"3',
+      'secret4': 'value\'4'
+    }
     # Mock the logger and test that it is called with the correct arguments
     with patch('pipe.pipe.logger') as mock_logger:
       ConjurPipe.writeSecrets(secrets, '/tmp')
-      mock_logger.info.assert_called_once_with('Writing secrets to /tmp/secrets.txt')
+      mock_logger.info.assert_called_once_with('Writing secrets to /tmp/secrets.env')
 
     # Test default dir
     with patch('pipe.pipe.logger') as mock_logger:
       ConjurPipe.writeSecrets(secrets)
-      mock_logger.info.assert_called_once_with(f'Writing secrets to {os.getcwd()}/secrets.txt')
+      mock_logger.info.assert_called_once_with(f'Writing secrets to {os.getcwd()}/secrets.env')
 
     # Check that the file is written correctly
-    with open('secrets.txt', 'r') as f: content = f.read()
-    self.assertEqual(content, 'secret1: value1\nsecret2: value2\n')
+    with open('secrets.env', 'r') as f: content = f.read()
+    self.assertEqual(content, """secret1="value 1"
+secret2="value=2"
+secret3="value\\"3"
+secret4="value\'4"
+""")
+    
+    # Check that the load_secrets.sh script is written correctly
+    with open('load_secrets.sh', 'r') as f: content = f.read()
+    self.assertIn('source ./secrets.env', content)
+    self.assertIn('rm ./secrets.env', content)
 
     # Clean up
-    os.remove('secrets.txt')
+    os.remove('secrets.env')
+    os.remove('load_secrets.sh')
 
-    # TODO: Test failure cases
+  # TODO: Variable values with special characters and quotes
+  # TODO: Test failure cases
 
