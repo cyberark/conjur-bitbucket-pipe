@@ -102,19 +102,32 @@ class ConjurPipe(Pipe):
     with open(f'{dir}/secrets.env', 'w', opener=opener_private) as f:
       for key in secrets:
         # Use `json.dumps` to surround the value with quotes and escape any quotes within the value
-        f.write(f'{key}={json.dumps(secrets[key])}\n')
+        value = json.dumps(secrets[key])
+        # Use only the final portion of the key as the environment variable name
+        key = key.split('/')[-1]
+        f.write(f'{key}={value}\n')
     
     with open(f'{dir}/load_secrets.sh', 'w', opener=opener_executable) as f:
       f.write(activate_script)
 
   @staticmethod
-  def validateSecretNames(secrets: List[str]):
-    # Because the secrets will be loaded as environment variables in a shell, we need to ensure they are
-    # valid shell variable names
-    for key in secrets:
+  def validateSecretNames(secretNames: List[str]):
+    # To set the secrets as environment variables, we need to remove any paths from the keys and
+    # just use the final portion of the key as the variable name. This is because environment variables
+    # cannot contain slashes. We'll also validate the resulting truncated names to ensure they are
+    # valid shell variable names.
+    keys = [key.split('/')[-1] for key in secretNames]
+
+    # Ensure there are no duplicate keys, when looking just at the final portion of the key
+    if len(keys) != len(set(keys)):
+      raise ValueError('Duplicate secret names found in secrets list. The final portion of the key must be unique.')
+    
+    for key in keys:
+      truncated_key = key.split('/')[-1]
+      # Ensure the truncated key is a valid shell variable name
       regex = re.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
-      if not regex.match(key):
-        raise ValueError(f'Unsupported secret name {json.dumps(key)}: variable names can only include alphanumerics and underscores, with first char being a non-digit')
+      if not regex.match(truncated_key):
+        raise ValueError(f'Unsupported secret name {json.dumps(truncated_key)}: variable names can only include alphanumerics and underscores, with first char being a non-digit')
 
 if __name__ == '__main__':
   pipe = ConjurPipe(pipe_metadata='/pipe.yml', schema=schema)

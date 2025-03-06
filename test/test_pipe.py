@@ -34,11 +34,25 @@ class TestPipe(AsyncTestCase):
     client = mock.MagicMock(spec=Client)
     with patch.object(client, 'get_many') as mock_get_many:
       ret = asyncio.Future()
-      ret.set_result({'secret1': 'value1', 'secret2': 'value2'})
+      ret.set_result({'path/secret1': 'value1', 'other/path/secret2': 'value2'})
       mock_get_many.return_value = ret
-      secrets = await ConjurPipe.fetch_secrets(client, ['secret1', 'secret2'])
+      secrets = await ConjurPipe.fetch_secrets(client, ['path/secret1', 'other/path/secret2'])
       mock_get_many.assert_called_once()
-      self.assertEqual(secrets, {'secret1': 'value1', 'secret2': 'value2'})
+      self.assertEqual(secrets, {'path/secret1': 'value1', 'other/path/secret2': 'value2'})
+
+  async def test_fetch_secrets_duplicate_secret_names(self):
+    duplicate_secret_names = [
+      'path/secret1',
+      'other/path/secret1',
+    ]
+
+    client = mock.MagicMock(spec=Client)
+    with patch.object(client, 'get_many') as mock_get_many:
+      with self.assertRaises(ValueError) as err:
+        await ConjurPipe.fetch_secrets(client, duplicate_secret_names)
+      self.assertIn("Duplicate secret names", str(err.exception))
+      
+      mock_get_many.assert_not_called()
 
   async def test_fetch_secrets_invalid_secret_names(self):
     invalid_secret_names = [
@@ -70,7 +84,7 @@ class TestPipe(AsyncTestCase):
       'secret1': 'value 1',
       'secret2': 'value=2',
       'secret3': 'value"3',
-      'secret4': 'value\'4'
+      'path/secret4': 'value\'4' # "path/" will be removed from the key
     }
     # Mock the logger and test that it is called with the correct arguments
     with patch('pipe.pipe.logger') as mock_logger:

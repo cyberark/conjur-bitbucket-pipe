@@ -15,7 +15,6 @@ export BITBUCKET_STEP_OIDC_TOKEN="dummy-jwt"
 
 # Start interactive container
 docker-compose exec -it \
-  -e CONJUR_API_KEY \
   -e BITBUCKET_STEP_OIDC_TOKEN \
   pipe /bin/bash
 

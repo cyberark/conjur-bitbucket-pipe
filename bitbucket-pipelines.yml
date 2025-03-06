@@ -7,8 +7,6 @@ pipelines:
         name: 'Test pipe'
         oidc: true
         script:
-          - echo $BITBUCKET_STEP_OIDC_TOKEN > $(pwd)/web-identity-token
-          - cat web-identity-token
           - cd bin
           - ./start-conjur.sh
           - pipe: docker://cyberark/conjur-bitbucket-pipe:edge
