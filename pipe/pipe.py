@@ -3,13 +3,14 @@ import json
 import os
 import re
 from dataclasses import dataclass
+from enum import Enum
 from typing import List
 
 from bitbucket_pipes_toolkit import Pipe, get_logger
 from conjur_api import Client
-from conjur_api.models import ConjurConnectionInfo, CredentialsData
-from conjur_api.providers import (JWTAuthenticationStrategy,
-                                  SimpleCredentialsProvider)
+from conjur_api.models import ConjurConnectionInfo
+from conjur_api.providers import JWTAuthenticationStrategy
+from conjur_api.wrappers.http_wrapper import HttpVerb, invoke_endpoint
 
 logger = get_logger()
 
@@ -28,6 +29,33 @@ source ./secrets.env
 rm ./secrets.env
 set +a
 """
+
+# The following is a workaround to enable the still-in-development Bitbucket authentication strategy
+class BitbucketEndpoints(Enum):
+    AUTHENTICATE_BITBUCKET="{url}/authn-bitbucket/{service_id}/{account}/{id}/authenticate"
+    
+class BitbucketAuthenticationStrategy(JWTAuthenticationStrategy):
+
+    async def _send_authenticate_request(self, ssl_verification_data, connection_info):
+        self._validate_service_id_exists(connection_info)
+
+        params = {
+            'url': connection_info.conjur_url,
+            'service_id': connection_info.service_id,
+            'account': connection_info.conjur_account,
+            'id': "host/bitbucket-pipelines/7c459824-f46b-48dc-9f29-e23b6f8a2655"
+        }
+        data = f"jwt={self.jwt_token}"
+
+        response = await invoke_endpoint(
+            HttpVerb.POST,
+            BitbucketEndpoints.AUTHENTICATE_BITBUCKET,
+            params,
+            data,
+            ssl_verification_metadata=ssl_verification_data,
+            proxy_params=connection_info.proxy_params)
+        return response.text
+# End of workaround
 
 @dataclass
 class PipeConfig:
@@ -75,7 +103,7 @@ class ConjurPipe(Pipe):
                                            account=config.conjur_account,
                                            service_id=config.conjur_service_id)
 
-    client = Client(connection_info, authn_strategy=JWTAuthenticationStrategy(config.jwt))
+    client = Client(connection_info, authn_strategy=BitbucketAuthenticationStrategy(config.jwt))
     return client
 
   @staticmethod
