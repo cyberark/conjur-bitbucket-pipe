@@ -1,10 +1,6 @@
-# Create some secrets for the pipelines to use
-- !variable secret1
-- !variable secret2
-
-# Setup Authn-JWT for Bitbuket
+# Setup authn for Bitbucket
 - !policy
-  id: conjur/authn-jwt/bitbucket
+  id: conjur/authn-bitbucket/ci
   body:
     - !webservice
     
@@ -20,29 +16,37 @@
 
 # Create a policy to contain any Bitbucket pipelines
 - !policy
-  id: conjur/authn-jwt/bitbucket/pipelines
+  id: conjur/authn-bitbucket/ci/pipelines
   body:
-    - !host
-        id: test-pipeline
-        annotations:
-          # These should match the values provided by Bitbucket in
-          # "Repository Settings" > "Pipelines" > "OopenID Connect"
-          authn-jwt/bitbucket/repositoryUuid: "{7c459824-f46b-48dc-9f29-e23b6f8a2655}"
-          authn-jwt/bitbucket/workspaceUuid: "{11d955fb-a20a-4969-a1f9-dc86b13622f4}"
-          authn-jwt/bitbucket/aud: "ari:cloud:bitbucket::workspace/11d955fb-a20a-4969-a1f9-dc86b13622f4"
+    - !group
 
-# Add the test pipeline to the group that can authenticate using authn-jwt/bitbucket
+    - &hosts
+      - !host
+          id: 7c459824-f46b-48dc-9f29-e23b6f8a2655
+          annotations:
+            # These should match the values provided by Bitbucket in
+            # "Repository Settings" > "Pipelines" > "OpenID Connect"
+            authn-bitbucket/ci/repositoryUuid: "{7c459824-f46b-48dc-9f29-e23b6f8a2655}"
+            authn-bitbucket/ci/workspaceUuid: "{11d955fb-a20a-4969-a1f9-dc86b13622f4}"
+            authn-bitbucket/ci/aud: "ari:cloud:bitbucket::workspace/11d955fb-a20a-4969-a1f9-dc86b13622f4"
+            authn-bitbucket/iss: "https://api.bitbucket.org/2.0/workspaces/cyberark1/pipelines-config/identity/oidc"
+    
+    - !grant
+      role: !group
+      members: *hosts
+
+    # Create some secrets for the pipelines to use
+    - &variables
+      - !variable secret1
+      - !variable secret2
+    
+    # Allow the pipelines to read the variables
+    - !permit
+      role: !group
+      privilege: [ read, execute ]
+      resource: *variables
+
+# Add the pipelines to the group that can authenticate using authn-bitbucket/ci
 - !grant
-  role: !group conjur/authn-jwt/bitbucket/authenticatable
-  member: !host conjur/authn-jwt/bitbucket/pipelines/test-pipeline
-
-# Allow the test pipeline to read the secrets
-- !permit
-  role: !host conjur/authn-jwt/bitbucket/pipelines/test-pipeline
-  privilege: [ read, execute ]
-  resource: !variable secret1
-
-- !permit
-  role: !host conjur/authn-jwt/bitbucket/pipelines/test-pipeline
-  privilege: [ read, execute ]
-  resource: !variable secret2
+  role: !group conjur/authn-bitbucket/ci/authenticatable
+  members: !group conjur/authn-bitbucket/ci/pipelines

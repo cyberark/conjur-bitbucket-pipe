@@ -13,8 +13,8 @@ pipelines:
             variables:
               CONJUR_URL: 'http://$BITBUCKET_DOCKER_HOST_INTERNAL:8888'
               CONJUR_ACCOUNT: 'conjur'
-              CONJUR_SERVICE_ID: 'bitbucket'
-              SECRETS: 'secret1,secret2'
+              CONJUR_SERVICE_ID: 'ci'
+              SECRETS: 'conjur/authn-bitbucket/ci/pipelines/secret1,conjur/authn-bitbucket/ci/pipelines/secret2'
         after-script:
           - docker-compose logs
         services:
