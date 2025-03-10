@@ -22,7 +22,7 @@ pipelines:
     - step:
         name: 'Load secrets'
         script:
-          - ls -ltra $BITBUCKET_PIPE_SHARED_STORAGE_DIR
-          - $BITBUCKET_PIPE_SHARED_STORAGE_DIR/load_secrets.sh
+          - find $BITBUCKET_PIPE_SHARED_STORAGE_DIR
+          - $BITBUCKET_PIPE_SHARED_STORAGE_DIR/cyberark/conjur-bitbucket-pipe/load_secrets.sh
           - env | grep secret
-          - ls -ltra $BITBUCKET_PIPE_SHARED_STORAGE_DIR
+          - find $BITBUCKET_PIPE_SHARED_STORAGE_DIR

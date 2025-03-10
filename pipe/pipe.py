@@ -64,7 +64,7 @@ class PipeConfig:
   secrets: List[str]
   conjur_service_id: str
   jwt: str
-  bitbucket_pipe_shared_storage_dir: str = None
+  output_dir: str = None
 
   @staticmethod
   def secrets_to_list(secrets: str) -> List[str]:
@@ -79,7 +79,7 @@ class PipeConfig:
       conjur_service_id=os.getenv('CONJUR_SERVICE_ID'),
       secrets=PipeConfig.secrets_to_list(os.getenv('SECRETS')),
       jwt=os.getenv('BITBUCKET_STEP_OIDC_TOKEN'),
-      bitbucket_pipe_shared_storage_dir=os.getenv('BITBUCKET_PIPE_SHARED_STORAGE_DIR')
+      output_dir=os.getenv('BITBUCKET_PIPE_STORAGE_DIR')
     )
 
 class ConjurPipe(Pipe):
@@ -93,7 +93,7 @@ class ConjurPipe(Pipe):
     await client.authenticate()
     
     secrets = await ConjurPipe.fetch_secrets(client, config.secrets)
-    ConjurPipe.writeSecrets(secrets, config.bitbucket_pipe_shared_storage_dir)
+    ConjurPipe.writeSecrets(secrets, config.output_dir)
 
     ConjurPipe.success(message="Success!")
 
