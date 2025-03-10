@@ -14,7 +14,8 @@ pipelines:
               CONJUR_URL: 'http://$BITBUCKET_DOCKER_HOST_INTERNAL:8888'
               CONJUR_ACCOUNT: 'conjur'
               CONJUR_SERVICE_ID: 'ci'
-              SECRETS: 'conjur/authn-bitbucket/ci/pipelines/secret1,conjur/authn-bitbucket/ci/pipelines/secret2'
+              SECRETS: 'conjur/authn-bitbucket/ci/pipelines/secret1,conjur/authn-bitbucket/ci/pipelines/secret2,conjur/authn-bitbucket/ci/pipelines/myvar'
+              
         after-script:
           - docker-compose logs
         services:
@@ -22,7 +23,9 @@ pipelines:
     - step:
         name: 'Load secrets'
         script:
-          - find $BITBUCKET_PIPE_SHARED_STORAGE_DIR
-          - $BITBUCKET_PIPE_SHARED_STORAGE_DIR/cyberark/conjur-bitbucket-pipe/load_secrets.sh
-          - env | grep secret
-          - find $BITBUCKET_PIPE_SHARED_STORAGE_DIR
+          - cd /opt/atlassian/pipelines/agent/build/.bitbucket/pipelines/generated/pipeline/pipes/cyberark/conjur-bitbucket-pipe
+          - ls
+          - set -o allexport
+          - . ./load_secrets.sh
+          - env
+          - ls

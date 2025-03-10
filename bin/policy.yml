@@ -39,6 +39,7 @@
     - &variables
       - !variable secret1
       - !variable secret2
+      - !variable myvar
     
     # Allow the pipelines to read the variables
     - !permit

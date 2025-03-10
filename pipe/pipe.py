@@ -25,8 +25,8 @@ schema = {
 activate_script = """
 #!/usr/bin/env sh
 set -a
-source ./secrets.env
-rm ./secrets.env
+source "$(dirname "$0")/secrets.env"
+rm "$(dirname "$0")/secrets.env"
 set +a
 """
 

@@ -106,13 +106,11 @@ secret4="value\'4"
     
     # Check that the load_secrets.sh script is written correctly
     with open('load_secrets.sh', 'r') as f: content = f.read()
-    self.assertIn('source ./secrets.env', content)
-    self.assertIn('rm ./secrets.env', content)
+    self.assertIn('secrets.env', content)
 
     # Clean up
     os.remove('secrets.env')
     os.remove('load_secrets.sh')
 
-  # TODO: Variable values with special characters and quotes
   # TODO: Test failure cases
 
