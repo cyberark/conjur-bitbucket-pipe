@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      # To avoid the following error:
+      #
+      #   Error: Database is uninitialized and superuser password is not
+      #   specified.  You must specify POSTGRES_PASSWORD for the superuser. Use
+      #   "-e POSTGRES_PASSWORD=password" to set it in "docker run".
+      #
+      #   You may also use POSTGRES_HOST_AUTH_METHOD=trust to allow all
+      #   connections without a password. This is *not* recommended. See
+      #   PostgreSQL documentation about "trust"
+      POSTGRES_HOST_AUTH_METHOD: trust
+
+  conjur:
+    image: cyberark/conjur:c6424bf0
+    command: server -a conjur
+    environment:
+      DATABASE_URL: postgres://postgres@postgres/postgres
+      CONJUR_DATA_KEY:
+      RAILS_ENV: development
+      CONJUR_LOG_LEVEL: debug
+      CONJUR_AUTHENTICATORS: "authn,authn-bitbucket/ci"
+    depends_on:
+      - postgres
+    ports:
+      - "8888:80"
+  
+  cli:
+    image: ${REGISTRY_URL:-docker.io}/cyberark/conjur-cli:8
+    environment:
+      CONJUR_APPLIANCE_URL: http://conjur
+      CONJUR_ACCOUNT: conjur
+      CONJUR_AUTHN_LOGIN: admin
+    entrypoint: /bin/bash -c "sleep infinity"
+
+  pipe:
+    build:
+     context: .
+    entrypoint: /bin/bash -c "sleep infinity"
+    depends_on:
+      - conjur
+    environment:
+      CONJUR_URL: http://conjur
+      CONJUR_ACCOUNT: conjur
+      CONJUR_SERVICE_ID: bitbucket
+      SECRETS: secret1,secret2

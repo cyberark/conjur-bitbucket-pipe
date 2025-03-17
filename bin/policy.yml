@@ -1,0 +1,53 @@
+# Setup authn for Bitbucket
+- !policy
+  id: conjur/authn-bitbucket/ci
+  body:
+    - !webservice
+    
+    - !variable provider-uri
+    - !variable token-app-property
+    - !variable identity-path
+    
+    - !group authenticatable
+    - !permit
+      role: !group authenticatable
+      privilege: [ read, authenticate ]
+      resource: !webservice
+
+# Create a policy to contain any Bitbucket pipelines
+- !policy
+  id: conjur/authn-bitbucket/ci/pipelines
+  body:
+    - !group
+
+    - &hosts
+      - !host
+          id: 7c459824-f46b-48dc-9f29-e23b6f8a2655
+          annotations:
+            # These should match the values provided by Bitbucket in
+            # "Repository Settings" > "Pipelines" > "OpenID Connect"
+            authn-bitbucket/ci/repositoryUuid: "{7c459824-f46b-48dc-9f29-e23b6f8a2655}"
+            authn-bitbucket/ci/workspaceUuid: "{11d955fb-a20a-4969-a1f9-dc86b13622f4}"
+            authn-bitbucket/ci/aud: "ari:cloud:bitbucket::workspace/11d955fb-a20a-4969-a1f9-dc86b13622f4"
+            authn-bitbucket/iss: "https://api.bitbucket.org/2.0/workspaces/cyberark1/pipelines-config/identity/oidc"
+    
+    - !grant
+      role: !group
+      members: *hosts
+
+    # Create some secrets for the pipelines to use
+    - &variables
+      - !variable secret1
+      - !variable secret2
+      - !variable myvar
+    
+    # Allow the pipelines to read the variables
+    - !permit
+      role: !group
+      privilege: [ read, execute ]
+      resource: *variables
+
+# Add the pipelines to the group that can authenticate using authn-bitbucket/ci
+- !grant
+  role: !group conjur/authn-bitbucket/ci/authenticatable
+  members: !group conjur/authn-bitbucket/ci/pipelines

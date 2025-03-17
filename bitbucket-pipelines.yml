@@ -1,0 +1,31 @@
+image:
+  name: atlassian/default-image:4
+
+pipelines:
+  default:
+    - step:
+        name: 'Test pipe'
+        oidc: true
+        script:
+          - cd bin
+          - ./start-conjur.sh
+          - pipe: docker://cyberark/conjur-bitbucket-pipe:edge
+            variables:
+              CONJUR_URL: 'http://$BITBUCKET_DOCKER_HOST_INTERNAL:8888'
+              CONJUR_ACCOUNT: 'conjur'
+              CONJUR_SERVICE_ID: 'ci'
+              SECRETS: 'conjur/authn-bitbucket/ci/pipelines/secret1,conjur/authn-bitbucket/ci/pipelines/secret2,conjur/authn-bitbucket/ci/pipelines/myvar'
+              
+        after-script:
+          - docker-compose logs
+        services:
+          - docker
+    - step:
+        name: 'Load secrets'
+        script:
+          - cd /opt/atlassian/pipelines/agent/build/.bitbucket/pipelines/generated/pipeline/pipes/cyberark/conjur-bitbucket-pipe
+          - ls
+          - set -o allexport
+          - . ./load_secrets.sh
+          - env
+          - ls
