@@ -4,8 +4,8 @@
   body:
     - !webservice
     
-    - !variable provider-uri
-    - !variable token-app-property
+    - !variable server-url
+    - !variable workspace-uuid
     - !variable identity-path
     
     - !group authenticatable
@@ -16,20 +16,12 @@
 
 # Create a policy to contain any Bitbucket pipelines
 - !policy
-  id: conjur/authn-bitbucket/ci/pipelines
+  id: bitbucket-pipelines
   body:
     - !group
 
     - &hosts
-      - !host
-          id: 7c459824-f46b-48dc-9f29-e23b6f8a2655
-          annotations:
-            # These should match the values provided by Bitbucket in
-            # "Repository Settings" > "Pipelines" > "OpenID Connect"
-            authn-bitbucket/ci/repositoryUuid: "{7c459824-f46b-48dc-9f29-e23b6f8a2655}"
-            authn-bitbucket/ci/workspaceUuid: "{11d955fb-a20a-4969-a1f9-dc86b13622f4}"
-            authn-bitbucket/ci/aud: "ari:cloud:bitbucket::workspace/11d955fb-a20a-4969-a1f9-dc86b13622f4"
-            authn-bitbucket/iss: "https://api.bitbucket.org/2.0/workspaces/cyberark1/pipelines-config/identity/oidc"
+      - !host 7c459824-f46b-48dc-9f29-e23b6f8a2655 # This is the repositoryUuid
     
     - !grant
       role: !group
@@ -50,4 +42,4 @@
 # Add the pipelines to the group that can authenticate using authn-bitbucket/ci
 - !grant
   role: !group conjur/authn-bitbucket/ci/authenticatable
-  members: !group conjur/authn-bitbucket/ci/pipelines
+  members: !group bitbucket-pipelines

@@ -23,16 +23,17 @@ schema = {
 }
 
 ACTIVATE_SCRIPT = """
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 set -a
-source "$(dirname "$0")/secrets.env"
-rm "$(dirname "$0")/secrets.env"
+path="$(dirname "$0")"
+source "$path/secrets.env"
+rm "$path/secrets.env"
 set +a
 """
 
 # The following is a workaround to enable the still-in-development Bitbucket authentication strategy
 class BitbucketEndpoints(Enum):
-    AUTHENTICATE_BITBUCKET="{url}/authn-bitbucket/{service_id}/{account}/{id}/authenticate"
+    AUTHENTICATE_BITBUCKET="{url}/authn-bitbucket/{service_id}/{account}/authenticate"
 
 class BitbucketAuthenticationStrategy(JWTAuthenticationStrategy):
 
@@ -43,7 +44,6 @@ class BitbucketAuthenticationStrategy(JWTAuthenticationStrategy):
             'url': connection_info.conjur_url,
             'service_id': connection_info.service_id,
             'account': connection_info.conjur_account,
-            'id': "host/conjur/authn-bitbucket/ci/pipelines/7c459824-f46b-48dc-9f29-e23b6f8a2655"
         }
         data = f"jwt={self.jwt_token}"
 

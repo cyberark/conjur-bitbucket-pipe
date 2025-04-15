@@ -32,14 +32,14 @@ main() {
   docker-compose exec cli conjur login -i admin -p "$admin_api_key"
   docker-compose cp policy.yml cli:/policy.yml
   docker-compose exec cli conjur policy load -b root -f /policy.yml
-  docker-compose exec cli conjur variable set -i conjur/authn-bitbucket/ci/pipelines/secret1 -v "SuperSecret"
-  docker-compose exec cli conjur variable set -i conjur/authn-bitbucket/ci/pipelines/secret2 -v "AnotherSecret"
-  docker-compose exec cli conjur variable set -i conjur/authn-bitbucket/ci/pipelines/myvar -v "Test value"
+  docker-compose exec cli conjur variable set -i bitbucket-pipelines/secret1 -v "SuperSecret"
+  docker-compose exec cli conjur variable set -i bitbucket-pipelines/secret2 -v "AnotherSecret"
+  docker-compose exec cli conjur variable set -i bitbucket-pipelines/myvar -v "Test value"
 
   # Set the Bitbucket OIDC provider configuration
-  docker-compose exec cli conjur variable set -i conjur/authn-bitbucket/ci/provider-uri -v "https://api.bitbucket.org/2.0/workspaces/cyberark1/pipelines-config/identity/oidc"
-  docker-compose exec cli conjur variable set -i conjur/authn-bitbucket/ci/token-app-property -v "repositoryUuid"
-  docker-compose exec cli conjur variable set -i conjur/authn-bitbucket/ci/identity-path -v "conjur/authn-bitbucket/ci/pipelines"
+  docker-compose exec cli conjur variable set -i conjur/authn-bitbucket/ci/server-url -v "https://api.bitbucket.org/2.0/workspaces/cyberark1/pipelines-config/identity/oidc"
+  docker-compose exec cli conjur variable set -i conjur/authn-bitbucket/ci/workspace-uuid -v "11d955fb-a20a-4969-a1f9-dc86b13622f4"
+  docker-compose exec cli conjur variable set -i conjur/authn-bitbucket/ci/identity-path -v "bitbucket-pipelines"
 }
 
 main
