@@ -9,7 +9,74 @@ Bitbucket pipelines.
 - A Bitbucket Cloud repository with a `bitbucket-pipelines.yml` file
 - Conjur Open Source, Enterprise, or Cloud
 
-## TODO: Authenticator setup
+## Authenticator setup
+
+Example policy for the Bitbucket authenticator:
+
+```yaml
+
+- !policy
+  id: conjur/authn-bitbucket/ci
+  body:
+    - !webservice
+    
+    - !variable server-url
+    - !variable workspace-uuid
+    - !variable identity-path
+    
+    - !group authenticatable
+    - !permit
+      role: !group authenticatable
+      privilege: [ read, authenticate ]
+      resource: !webservice
+
+# Create a policy to contain any Bitbucket pipelines
+- !policy
+  id: bitbucket-pipelines
+  body:
+    - !group
+
+    - &hosts
+      - !host
+        id: <bitbucket-repository-uuid> # Replace this with your repositoryUuid
+      # Add more hosts here for other Bitbucket repositories if needed
+    
+    - !grant
+      role: !group
+      members: *hosts
+
+    # Create some secrets for the pipelines to use
+    - &variables
+      - !variable secret1
+      - !variable secret2
+    
+    # Allow the pipelines to read the variables
+    - !permit
+      role: !group
+      privilege: [ read, execute ]
+      resource: *variables
+
+  # If using multiple Bitbucket repositories, allow each repository to read
+  # only the variables it needs, to avoid exposing secrets to other repositories
+
+# Add the pipelines to the group that can authenticate using authn-bitbucket/ci
+- !grant
+  role: !group conjur/authn-bitbucket/ci/authenticatable
+  members: !group bitbucket-pipelines
+```
+
+After loading this policy into Conjur, add values for the authenticator variables:
+
+```bash
+# Replace `<workspace-name>` with your Bitbucket workspace name
+conjur variable set -i conjur/authn-bitbucket/ci/server-url -v "https://api.bitbucket.org/2.0/workspaces/<workspace-name>/pipelines-config/identity/oidc"
+
+# Replace `<workspace-uuid>` with your workspaceUuid
+conjur variable set -i conjur/authn-bitbucket/ci/workspace-uuid -v "<workspace-uuid>"
+
+# This is the path in the Conjur policy where the Bitbucket pipeline hosts are defined
+conjur variable set -i conjur/authn-bitbucket/ci/identity-path -v "bitbucket-pipelines"
+```
 
 ## Usage
 
@@ -27,7 +94,7 @@ To use this Pipe in your Bitbucket pipeline, add the following to the
         CONJUR_URL: 'https://<your-conjur-url>'
         CONJUR_ACCOUNT: '<your-conjur-account>'
         CONJUR_SERVICE_ID: '<your-conjur-service-id>' # Service ID of the Bitbucket Authenticator in Conjur
-        SECRETS: 'name/of/secret1,name/of/secret2' # Comma-separated list of Conjur variable IDs
+        SECRETS: 'bitbucket-pipelines/secret1,bitbucket-pipelines/secret2' # Comma-separated list of Conjur variable IDs
 
 ```
 
