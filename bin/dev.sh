@@ -1,22 +1,25 @@
-#!/usr/bin/env bash -ex
+#!/usr/bin/env bash
 
 cd "$(dirname "$0")"
 . ./utils.sh
 
 docker-compose down --remove-orphans
 
-source ./start-conjur.sh
+. ./start-conjur.sh --mock
 
 docker-compose build pipe
 docker-compose up --no-deps -d pipe
 
-# Replace this value with a valid OIDC JWT from the Bitbucket pipeline
-export BITBUCKET_STEP_OIDC_TOKEN="dummy-jwt"
+# Fetch a mock JWT token
+export BITBUCKET_STEP_OIDC_TOKEN=$(curl "http://localhost:8008/token")
+
+announce "
+You are now in the interactive container.
+You can run the following command to test the pipe:
+  python pipe/pipe.py
+"
 
 # Start interactive container
 docker-compose exec -it \
   -e BITBUCKET_STEP_OIDC_TOKEN \
   pipe /bin/bash
-
-# Now you can run:
-#   python pipe/pipe.py
