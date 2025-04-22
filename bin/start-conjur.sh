@@ -49,7 +49,7 @@ main() {
 
   if $USE_MOCK_JWT_SERVER; then
     docker-compose up -d mock-jwt-server
-  end
+  fi
 
   echo "Done!"
 
