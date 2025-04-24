@@ -14,15 +14,14 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
 
   conjur:
-    image: cyberark/conjur:4fcdd489 # This is the version that supports authn-bitbucket
-    # pull_policy: never # Use locally built image
+    image: cyberark/conjur
     command: server -a conjur
     environment:
       DATABASE_URL: postgres://postgres@postgres/postgres
       CONJUR_DATA_KEY:
       RAILS_ENV: development
       CONJUR_LOG_LEVEL: debug
-      CONJUR_AUTHENTICATORS: "authn,authn-bitbucket/ci"
+      CONJUR_AUTHENTICATORS: "authn,authn-jwt/bitbucket"
     depends_on:
       - postgres
     ports:
@@ -45,7 +44,7 @@ services:
     environment:
       CONJUR_URL: http://conjur
       CONJUR_ACCOUNT: conjur
-      CONJUR_SERVICE_ID: ci
+      CONJUR_SERVICE_ID: bitbucket
       SECRETS: secret1,secret2
 
   mock-jwt-server:

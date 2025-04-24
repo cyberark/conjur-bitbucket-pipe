@@ -52,7 +52,7 @@ if (params.MODE == "PROMOTE") {
   chmod 600 bitbucket-key
   ssh-add bitbucket-key
 
-  source_ref=$(git rev-parse --abbrev-ref HEAD)
+  source_ref=\$(git rev-parse --abbrev-ref HEAD)
   dest_ref="refs/heads/main"
   dest_tag="refs/tags/v${params.VERSION_TO_PROMOTE}"
   bitbucket_repo="git@bitbucket.org:cyberark/conjur-pipe.git"

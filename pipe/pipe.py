@@ -25,37 +25,11 @@ schema = {
 ACTIVATE_SCRIPT = """
 #!/usr/bin/env bash
 set -a
-path="$(dirname "$0")"
-source "$path/secrets.env"
-rm "$path/secrets.env"
+file="{output_dir}/secrets.env"
+source "$file"
+rm "$file"
 set +a
 """
-
-# The following is a workaround to enable the still-in-development Bitbucket authentication strategy
-class BitbucketEndpoints(Enum):
-    AUTHENTICATE_BITBUCKET="{url}/authn-bitbucket/{service_id}/{account}/authenticate"
-
-class BitbucketAuthenticationStrategy(JWTAuthenticationStrategy):
-
-    async def _send_authenticate_request(self, ssl_verification_data, connection_info):
-        self._validate_service_id_exists(connection_info)
-
-        params = {
-            'url': connection_info.conjur_url,
-            'service_id': connection_info.service_id,
-            'account': connection_info.conjur_account,
-        }
-        data = f"jwt={self.jwt_token}"
-
-        response = await invoke_endpoint(
-            HttpVerb.POST,
-            BitbucketEndpoints.AUTHENTICATE_BITBUCKET,
-            params,
-            data,
-            ssl_verification_metadata=ssl_verification_data,
-            proxy_params=connection_info.proxy_params)
-        return response.text
-# End of workaround
 
 @dataclass
 class PipeConfig:
@@ -100,10 +74,10 @@ class ConjurPipe(Pipe):
     @staticmethod
     def create_conjur_client(config: PipeConfig):
         connection_info = ConjurConnectionInfo(conjur_url=config.conjur_url,
-                                                                                     account=config.conjur_account,
-                                                                                     service_id=config.conjur_service_id)
+                                               account=config.conjur_account,
+                                               service_id=config.conjur_service_id)
 
-        client = Client(connection_info, authn_strategy=BitbucketAuthenticationStrategy(config.jwt))
+        client = Client(connection_info, authn_strategy=JWTAuthenticationStrategy(config.jwt))
         return client
 
     @staticmethod
@@ -136,7 +110,7 @@ class ConjurPipe(Pipe):
                 file.write(f'{key}={value}\n')
 
         with open(f'{outdir}/load_secrets.sh', 'w', encoding='utf-8', opener=opener_executable) as file:
-            file.write(ACTIVATE_SCRIPT)
+            file.write(ACTIVATE_SCRIPT.format(output_dir=outdir))
 
     @staticmethod
     def validate_secret_names(secret_names: List[str]):

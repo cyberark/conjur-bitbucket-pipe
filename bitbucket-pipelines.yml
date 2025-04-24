@@ -13,7 +13,7 @@ pipelines:
             variables:
               CONJUR_URL: 'http://$BITBUCKET_DOCKER_HOST_INTERNAL:8888'
               CONJUR_ACCOUNT: 'conjur'
-              CONJUR_SERVICE_ID: 'ci'
+              CONJUR_SERVICE_ID: 'bitbucket'
               SECRETS: 'bitbucket-pipelines/secret1,bitbucket-pipelines/secret2,bitbucket-pipelines/myvar'
               
         after-script:
@@ -23,6 +23,7 @@ pipelines:
     - step:
         name: 'Load secrets'
         script:
-          - set -o allexport
           - . /opt/atlassian/pipelines/agent/build/.bitbucket/pipelines/generated/pipeline/pipes/cyberark/conjur-bitbucket-pipe/load_secrets.sh
-          - env
+          - echo "secret1=$secret1"
+          - echo "secret2=$secret2"
+          - echo "myvar=$myvar"

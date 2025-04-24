@@ -70,15 +70,15 @@ main() {
   docker-compose exec cli conjur variable set -i bitbucket-pipelines/myvar -v "Test value"
 
   # Set the Bitbucket OIDC provider configuration
-  docker-compose exec cli conjur variable set -i conjur/authn-bitbucket/ci/workspace-uuid -v "11d955fb-a20a-4969-a1f9-dc86b13622f4"
-  docker-compose exec cli conjur variable set -i conjur/authn-bitbucket/ci/identity-path -v "bitbucket-pipelines"
+  docker-compose exec cli conjur variable set -i conjur/authn-jwt/bitbucket/token-app-property -v "repositoryUuid"
+  docker-compose exec cli conjur variable set -i conjur/authn-jwt/bitbucket/identity-path -v "bitbucket-pipelines"
 
   if $USE_MOCK_JWT_SERVER; then
     # Set the mock JWT server URL
-    docker-compose exec cli conjur variable set -i conjur/authn-bitbucket/ci/server-url -v "http://mock-jwt-server:8080"
+    docker-compose exec cli conjur variable set -i conjur/authn-jwt/bitbucket/provider-uri -v "http://mock-jwt-server:8080"
   else
     # Set the Bitbucket OIDC server URL
-    docker-compose exec cli conjur variable set -i conjur/authn-bitbucket/ci/server-url \
+    docker-compose exec cli conjur variable set -i conjur/authn-jwt/bitbucket/provider-uri \
       -v "https://api.bitbucket.org/2.0/workspaces/cyberark1/pipelines-config/identity/oidc"
   fi
 }
