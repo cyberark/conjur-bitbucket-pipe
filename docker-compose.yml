@@ -43,9 +43,10 @@ services:
       - conjur
     environment:
       CONJUR_URL: http://conjur
-      CONJUR_ACCOUNT: conjur
-      CONJUR_SERVICE_ID: bitbucket
       SECRETS: secret1,secret2
+      # Default values
+      # CONJUR_ACCOUNT: conjur
+      # CONJUR_SERVICE_ID: bitbucket
 
   mock-jwt-server:
     image: cyberark/mock-jwt-server

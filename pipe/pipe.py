@@ -3,21 +3,22 @@ import json
 import os
 import re
 from dataclasses import dataclass
-from enum import Enum
 from typing import List
 
 from bitbucket_pipes_toolkit import Pipe, get_logger
 from conjur_api import Client
 from conjur_api.models import ConjurConnectionInfo
 from conjur_api.providers import JWTAuthenticationStrategy
-from conjur_api.wrappers.http_wrapper import HttpVerb, invoke_endpoint
+
+DEFAULT_CONJUR_ACCOUNT = 'conjur'
+DEFAULT_CONJUR_SERVICE_ID = 'bitbucket'
 
 logger = get_logger()
 
 schema = {
     'CONJUR_URL': { 'type': 'string', 'required': True },
-    'CONJUR_ACCOUNT': { 'type': 'string', 'required': True },
-    'CONJUR_SERVICE_ID': { 'type': 'string', 'required': True },
+    'CONJUR_ACCOUNT': { 'type': 'string', 'required': True, 'default': DEFAULT_CONJUR_ACCOUNT },
+    'CONJUR_SERVICE_ID': { 'type': 'string', 'required': True, 'default': DEFAULT_CONJUR_SERVICE_ID },
     'BITBUCKET_STEP_OIDC_TOKEN': { 'type': 'string', 'required': True },
     'SECRETS': { 'type': 'string', 'required': True },
 }
@@ -46,11 +47,21 @@ class PipeConfig:
         return list(filter(None, secrets.split(',')))
 
     @staticmethod
+    def get_default_conjur_account():
+        logger.info('No CONJUR_ACCOUNT provided, using default value "conjur"')
+        return DEFAULT_CONJUR_ACCOUNT
+
+    @staticmethod
+    def get_default_service_id():
+        logger.info('No CONJUR_SERVICE_ID provided, using default value "bitbucket"')
+        return DEFAULT_CONJUR_SERVICE_ID
+
+    @staticmethod
     def fetch_config_from_env():
         return PipeConfig(
             conjur_url=os.getenv('CONJUR_URL'),
-            conjur_account=os.getenv('CONJUR_ACCOUNT'),
-            conjur_service_id=os.getenv('CONJUR_SERVICE_ID'),
+            conjur_account=os.getenv('CONJUR_ACCOUNT') or PipeConfig.get_default_conjur_account(),
+            conjur_service_id=os.getenv('CONJUR_SERVICE_ID') or PipeConfig.get_default_service_id(),
             secrets=PipeConfig.secrets_to_list(os.getenv('SECRETS')),
             jwt=os.getenv('BITBUCKET_STEP_OIDC_TOKEN'),
             output_dir=os.getenv('BITBUCKET_PIPE_STORAGE_DIR')

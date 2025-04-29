@@ -91,8 +91,8 @@ To use this Pipe in your Bitbucket pipeline, add the following to the
     - pipe: docker://cyberark/conjur-bitbucket-pipe:edge # TODO: This will change when the Pipe is published
       variables:
         CONJUR_URL: 'https://<your-conjur-url>'
-        CONJUR_ACCOUNT: '<your-conjur-account>'
-        CONJUR_SERVICE_ID: 'bitbucket' # Service ID of the JWT Authenticator in Conjur
+        CONJUR_ACCOUNT: '<your-conjur-account>' # Defaults to 'conjur'
+        CONJUR_SERVICE_ID: 'bitbucket' # Service ID of the JWT Authenticator in Conjur. Defaults to 'bitbucket'
         SECRETS: 'bitbucket-pipelines/secret1,bitbucket-pipelines/secret2' # Comma-separated list of Conjur variable IDs
 
 ```
@@ -107,9 +107,7 @@ directory, and can be accessed in subsequent steps as follows:
 - step:
   name: 'Load secrets'
   script:
-    - cd /opt/atlassian/pipelines/agent/build/.bitbucket/pipelines/generated/pipeline/pipes/cyberark/conjur-bitbucket-pipe
-    - set -o allexport
-    - . ./load_secrets.sh
+    - . /opt/atlassian/pipelines/agent/build/.bitbucket/pipelines/generated/pipeline/pipes/cyberark/conjur-bitbucket-pipe/load_secrets.sh
 
 ```
 

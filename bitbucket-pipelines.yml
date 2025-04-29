@@ -12,9 +12,10 @@ pipelines:
           - pipe: docker://cyberark/conjur-bitbucket-pipe:edge
             variables:
               CONJUR_URL: 'http://$BITBUCKET_DOCKER_HOST_INTERNAL:8888'
-              CONJUR_ACCOUNT: 'conjur'
-              CONJUR_SERVICE_ID: 'bitbucket'
               SECRETS: 'bitbucket-pipelines/secret1,bitbucket-pipelines/secret2,bitbucket-pipelines/myvar'
+              # These are the default values so they don't need to be set
+              # CONJUR_ACCOUNT: 'conjur'
+              # CONJUR_SERVICE_ID: 'bitbucket'
               
         after-script:
           - docker-compose logs
