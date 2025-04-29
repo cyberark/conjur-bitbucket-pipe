@@ -27,15 +27,13 @@ class TestConfig(unittest.TestCase):
 
     @patch.dict(os.environ, {
         'CONJUR_URL': 'https://conjur.example.com',
-        'CONJUR_ACCOUNT': 'myaccount',
         'SECRETS': 'single_secret',
-        'CONJUR_SERVICE_ID': 'bitbucket',
         'BITBUCKET_STEP_OIDC_TOKEN': 'jwt-content'
     }, clear=True)
     def test_fetch_config_from_env_without_optional(self):
         config = PipeConfig.fetch_config_from_env()
         self.assertEqual(config.conjur_url, 'https://conjur.example.com')
-        self.assertEqual(config.conjur_account, 'myaccount')
+        self.assertEqual(config.conjur_account, 'conjur')
         self.assertEqual(config.secrets, ['single_secret'])
         self.assertEqual(config.conjur_service_id, 'bitbucket')
         self.assertIsNone(config.output_dir)
