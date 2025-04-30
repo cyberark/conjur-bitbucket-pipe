@@ -78,7 +78,14 @@ class TestPipe(AsyncTestCase):
 
             mock_get_many.assert_not_called()
 
-        # TODO: Test failure cases
+    async def test_fetch_secrets_error(self):
+        # Mock the Conjur client's get_many method to raise an error
+        client = mock.MagicMock(spec=Client)
+        with patch.object(client, 'get_many') as mock_get_many:
+            mock_get_many.side_effect = Exception("dummy error")
+            with self.assertRaises(Exception) as err:
+                await ConjurPipe.fetch_secrets(client, ['path/secret1'])
+            self.assertEqual("dummy error", str(err.exception))
 
     def test_write_secrets(self):
         # Create a dictionary of secrets with some special characters
@@ -115,5 +122,3 @@ secret4="value\'4"
         # Clean up
         os.remove('secrets.env')
         os.remove('load_secrets.sh')
-
-    # TODO: Test failure cases

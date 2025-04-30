@@ -4,11 +4,20 @@ image:
 pipelines:
   default:
     - step:
-        name: 'Test pipe'
+        name: 'Unit tests'
+        services:
+          - docker
+        script:
+          - ./bin/test.sh
+
+    - step:
+        name: 'Run pipe with Conjur OSS'
         oidc: true
         script:
           - cd bin
           - ./start-conjur.sh
+          # Note: This will use the latest docker image of the pipe, published by our internal CI.
+          # This may not be the same as the code in this repository.
           - pipe: docker://cyberark/conjur-bitbucket-pipe:edge
             variables:
               CONJUR_URL: 'http://$BITBUCKET_DOCKER_HOST_INTERNAL:8888'
@@ -16,15 +25,13 @@ pipelines:
               # These are the default values so they don't need to be set
               # CONJUR_ACCOUNT: 'conjur'
               # CONJUR_SERVICE_ID: 'bitbucket'
-              
         after-script:
           - docker-compose logs
         services:
           - docker
+
     - step:
-        name: 'Load secrets'
+        name: 'Test secrets loading'
         script:
           - . /opt/atlassian/pipelines/agent/build/.bitbucket/pipelines/generated/pipeline/pipes/cyberark/conjur-bitbucket-pipe/load_secrets.sh
-          - echo "secret1=$secret1"
-          - echo "secret2=$secret2"
-          - echo "myvar=$myvar"
+          - ./bin/e2e.sh
