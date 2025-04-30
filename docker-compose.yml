@@ -14,14 +14,14 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
 
   conjur:
-    image: cyberark/conjur:c6424bf0
+    image: cyberark/conjur
     command: server -a conjur
     environment:
       DATABASE_URL: postgres://postgres@postgres/postgres
       CONJUR_DATA_KEY:
       RAILS_ENV: development
       CONJUR_LOG_LEVEL: debug
-      CONJUR_AUTHENTICATORS: "authn,authn-bitbucket/ci"
+      CONJUR_AUTHENTICATORS: "authn,authn-jwt/bitbucket"
     depends_on:
       - postgres
     ports:
@@ -43,6 +43,18 @@ services:
       - conjur
     environment:
       CONJUR_URL: http://conjur
-      CONJUR_ACCOUNT: conjur
-      CONJUR_SERVICE_ID: bitbucket
       SECRETS: secret1,secret2
+      # Default values
+      # CONJUR_ACCOUNT: conjur
+      # CONJUR_SERVICE_ID: bitbucket
+
+  mock-jwt-server:
+    image: cyberark/mock-jwt-server
+    ports:
+      - 8008:8080
+    environment:
+      ISSUER: "http://mock-jwt-server:8080"
+      SUBJECT: "{7c459824-f46b-48dc-9f29-e23b6f8a2655}:{stepUuid}"
+      EXTERNAL_PORT: "8008"
+      AUDIENCE: "ari:cloud:bitbucket::workspace/11d955fb-a20a-4969-a1f9-dc86b13622f4"
+      EXTRA_CLAIMS: "repositoryUuid={7c459824-f46b-48dc-9f29-e23b6f8a2655};workspaceUuid={11d955fb-a20a-4969-a1f9-dc86b13622f4}"

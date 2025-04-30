@@ -1,12 +1,11 @@
-# Setup authn for Bitbucket
+---
 - !policy
-  id: conjur/authn-bitbucket/ci
+  id: conjur/authn-jwt/bitbucket
   body:
     - !webservice
-    
     - !variable provider-uri
-    - !variable token-app-property
-    - !variable identity-path
+    - !variable token-app-property # This can be "pipelineUuid", "stepUuid", or one of the other claims provided in the Bitbucket JWT
+    - !variable identity-path # This can be "conjur/authn-jwt/bitbucket/pipelines"
     
     - !group authenticatable
     - !permit
@@ -16,21 +15,16 @@
 
 # Create a policy to contain any Bitbucket pipelines
 - !policy
-  id: conjur/authn-bitbucket/ci/pipelines
+  id: bitbucket-pipelines
   body:
     - !group
 
     - &hosts
       - !host
-          id: 7c459824-f46b-48dc-9f29-e23b6f8a2655
-          annotations:
-            # These should match the values provided by Bitbucket in
-            # "Repository Settings" > "Pipelines" > "OpenID Connect"
-            authn-bitbucket/ci/repositoryUuid: "{7c459824-f46b-48dc-9f29-e23b6f8a2655}"
-            authn-bitbucket/ci/workspaceUuid: "{11d955fb-a20a-4969-a1f9-dc86b13622f4}"
-            authn-bitbucket/ci/aud: "ari:cloud:bitbucket::workspace/11d955fb-a20a-4969-a1f9-dc86b13622f4"
-            authn-bitbucket/iss: "https://api.bitbucket.org/2.0/workspaces/cyberark1/pipelines-config/identity/oidc"
-    
+        id: "{7c459824-f46b-48dc-9f29-e23b6f8a2655}"
+        annotations:
+          authn-jwt/bitbucket/repositoryUuid: "{7c459824-f46b-48dc-9f29-e23b6f8a2655}"
+
     - !grant
       role: !group
       members: *hosts
@@ -47,7 +41,7 @@
       privilege: [ read, execute ]
       resource: *variables
 
-# Add the pipelines to the group that can authenticate using authn-bitbucket/ci
+# Add the pipelines to the group that can authenticate using authn-jwt/bitbucket
 - !grant
-  role: !group conjur/authn-bitbucket/ci/authenticatable
-  members: !group conjur/authn-bitbucket/ci/pipelines
+  role: !group conjur/authn-jwt/bitbucket/authenticatable
+  members: !group bitbucket-pipelines

@@ -28,7 +28,7 @@ if (params.MODE == "PROMOTE") {
       export PATH="release-tools/bin:${PATH}"
       docker pull registry.tld/conjur-bitbucket-pipeline:${sourceVersion}
       # Promote source version to target version.
-      summon ./bin/publish.sh --promote --source ${sourceVersion} --target ${targetVersion}
+      ./bin/publish.sh --promote --source ${sourceVersion} --target ${targetVersion}
     """
 
     dockerImages = "docker-image*.tar"
@@ -44,9 +44,25 @@ if (params.MODE == "PROMOTE") {
   }
   release.copyEnterpriseRelease(params.VERSION_TO_PROMOTE)
 
-  //TODO: Authenticate to Bitbucket
-  // git remote add bitbucket git@bitbucket.org:cyberark1/conjur-pipe.git
-  // git push bitbucket main -f
+  // Fetch the SSH key for the Bitbucket account from Conjur,
+  // and use it push to the Bitbucket repository. Update the
+  // 'main' branch and the version tag.
+  infrapool.agentSh """
+  summon --yaml 'SSH_KEY: !var ci/bitbucket/ssh-key' bash -c 'echo $SSH_KEY > bitbucket-key'
+  chmod 600 bitbucket-key
+  ssh-add bitbucket-key
+
+  source_ref=\$(git rev-parse --abbrev-ref HEAD)
+  dest_ref="refs/heads/main"
+  dest_tag="refs/tags/v${params.VERSION_TO_PROMOTE}"
+  bitbucket_repo="git@bitbucket.org:cyberark/conjur-pipe.git"
+
+  git push -f ${bitbucket_repo} ${source_ref}:${dest_ref}
+  git push -f ${bitbucket_repo} ${source_ref}:${dest_tag}
+  
+  rm bitbucket-key
+  """
+
   return
 }
 

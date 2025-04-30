@@ -12,9 +12,10 @@ pipelines:
           - pipe: docker://cyberark/conjur-bitbucket-pipe:edge
             variables:
               CONJUR_URL: 'http://$BITBUCKET_DOCKER_HOST_INTERNAL:8888'
-              CONJUR_ACCOUNT: 'conjur'
-              CONJUR_SERVICE_ID: 'ci'
-              SECRETS: 'conjur/authn-bitbucket/ci/pipelines/secret1,conjur/authn-bitbucket/ci/pipelines/secret2,conjur/authn-bitbucket/ci/pipelines/myvar'
+              SECRETS: 'bitbucket-pipelines/secret1,bitbucket-pipelines/secret2,bitbucket-pipelines/myvar'
+              # These are the default values so they don't need to be set
+              # CONJUR_ACCOUNT: 'conjur'
+              # CONJUR_SERVICE_ID: 'bitbucket'
               
         after-script:
           - docker-compose logs
@@ -23,9 +24,7 @@ pipelines:
     - step:
         name: 'Load secrets'
         script:
-          - cd /opt/atlassian/pipelines/agent/build/.bitbucket/pipelines/generated/pipeline/pipes/cyberark/conjur-bitbucket-pipe
-          - ls
-          - set -o allexport
-          - . ./load_secrets.sh
-          - env
-          - ls
+          - . /opt/atlassian/pipelines/agent/build/.bitbucket/pipelines/generated/pipeline/pipes/cyberark/conjur-bitbucket-pipe/load_secrets.sh
+          - echo "secret1=$secret1"
+          - echo "secret2=$secret2"
+          - echo "myvar=$myvar"
