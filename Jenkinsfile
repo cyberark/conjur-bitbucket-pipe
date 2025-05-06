@@ -50,7 +50,7 @@ if (params.MODE == "PROMOTE") {
   // and use it push to the Bitbucket repository. Update the
   // 'main' branch and the version tag.
   sh """
-  summon --yaml 'SSH_KEY: !var ci/bitbucket/ssh-key' bash -c 'echo $SSH_KEY > bitbucket-key'
+  summon --yaml 'SSH_KEY: !var ci/bitbucket/ssh-key' bash -c 'echo \$SSH_KEY > bitbucket-key'
   chmod 600 bitbucket-key
   ssh-add bitbucket-key
 
@@ -59,8 +59,8 @@ if (params.MODE == "PROMOTE") {
   dest_tag="refs/tags/v${params.VERSION_TO_PROMOTE}"
   bitbucket_repo="git@bitbucket.org:cyberark-conjur/conjur-bitbucket-pipe.git"
 
-  git push -f ${bitbucket_repo} ${source_ref}:${dest_ref}
-  git push -f ${bitbucket_repo} ${source_ref}:${dest_tag}
+  git push -f \${bitbucket_repo} \${source_ref}:\${dest_ref}
+  git push -f \${bitbucket_repo} \${source_ref}:\${dest_tag}
   
   rm bitbucket-key
   """
