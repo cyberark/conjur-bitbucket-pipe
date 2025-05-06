@@ -1,5 +1,7 @@
 #!/usr/bin/env groovy
 
+@Library("product-pipelines-shared-library") _
+
 // Automated release, promotion and dependencies
 properties([
   // Include the automated release parameters for the build
@@ -19,14 +21,14 @@ if (params.MODE == "PROMOTE") {
     // Anything added to assetDirectory will be attached to the Github Release
 
     runSecurityScans(infrapool,
-      image: "registry.tld/conjur-bitbucket-pipeline:${sourceVersion}",
+      image: "registry.tld/conjur-bitbucket-pipe:${sourceVersion}",
       buildMode: params.MODE,
       branch: env.BRANCH_NAME)
 
     // Pull existing images from internal registry in order to promote
     infrapool.agentSh """
       export PATH="release-tools/bin:${PATH}"
-      docker pull registry.tld/conjur-bitbucket-pipeline:${sourceVersion}
+      docker pull registry.tld/conjur-bitbucket-pipe:${sourceVersion}
       # Promote source version to target version.
       ./bin/publish.sh --promote --source ${sourceVersion} --target ${targetVersion}
     """
@@ -55,7 +57,7 @@ if (params.MODE == "PROMOTE") {
   source_ref=\$(git rev-parse --abbrev-ref HEAD)
   dest_ref="refs/heads/main"
   dest_tag="refs/tags/v${params.VERSION_TO_PROMOTE}"
-  bitbucket_repo="git@bitbucket.org:cyberark/conjur-pipe.git"
+  bitbucket_repo="git@bitbucket.org:cyberark-conjur/conjur-bitbucket-pipe.git"
 
   git push -f ${bitbucket_repo} ${source_ref}:${dest_ref}
   git push -f ${bitbucket_repo} ${source_ref}:${dest_tag}
