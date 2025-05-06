@@ -21,9 +21,9 @@
 
     - &hosts
       - !host
-        id: "{7c459824-f46b-48dc-9f29-e23b6f8a2655}"
+        id: "{a694b002-1aa1-47f5-9479-9b598a9b8c5d}"
         annotations:
-          authn-jwt/bitbucket/repositoryUuid: "{7c459824-f46b-48dc-9f29-e23b6f8a2655}"
+          authn-jwt/bitbucket/repositoryUuid: "{a694b002-1aa1-47f5-9479-9b598a9b8c5d}"
 
     - !grant
       role: !group

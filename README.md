@@ -94,45 +94,45 @@ To use this Pipe in your Bitbucket pipeline, add the following to the
         CONJUR_ACCOUNT: '<your-conjur-account>' # Defaults to 'conjur'
         CONJUR_SERVICE_ID: 'bitbucket' # Service ID of the JWT Authenticator in Conjur. Defaults to 'bitbucket'
         SECRETS: 'bitbucket-pipelines/secret1,bitbucket-pipelines/secret2' # Comma-separated list of Conjur variable IDs
-
+    - . ./.secrets/load_secrets.sh
+    # Now you can access the secrets as environment variables
+    # For example,
+    - echo "Secret 1: $secret1"
 ```
 
-When this step is run, the Pipe will authenticate with Conjur using the OIDC
+When the Pipe is run, it will authenticate with Conjur using the OIDC
 credentials provided by Bitbucket, and retrieve the secrets specified in the
-`SECRETS` variable. The secrets will be written to the pipeline's shared storage
-directory, and can be accessed in subsequent steps as follows:
-
-```yaml
-
-- step:
-  name: 'Load secrets'
-  script:
-    - . /opt/atlassian/pipelines/agent/build/.bitbucket/pipelines/generated/pipeline/pipes/cyberark/conjur-bitbucket-pipe/load_secrets.sh
-
-```
-
-The secrets will now be available as environment variables in the pipeline. For
-example, if you have a secret with the ID `name/of/secret1`, you can access it
-in your pipeline as the environment variable `secret1`.
+`SECRETS` variable. The secrets will be written to a `.secrets` folder under the
+current working directory, and can be accessed within the same step of the
+pipeline. After running the generated script, `.secrets/load_secrets.sh`, the
+secrets will be available as environment variables. For example, if you have a
+secret with the ID `name/of/secret1`, you can access it in your pipeline as the
+environment variable `secret1`.
 
 ## Advanced Usage
 
-When the Pipe runs, it creates two files in the pipeline's shared storage
-directory: `load_secrets.sh` and `secrets.env`. The `secrets.env` file contains
+When the Pipe runs, it creates two files in a new directory named `.secrets`:
+`load_secrets.sh` and `secrets.env`. The `secrets.env` file contains
 the secrets as key-value pairs, and can be used directly by scripts and
 applications that make use of the .env ("dotenv") file format. The
 `load_secrets.sh` script is provided as a convenience to load the secrets from
 the `secrets.env` file into the shell environment. It also deletes the
 `secrets.env` file after loading the secrets, to prevent it from being read
-again by subsequent steps.
+again by subsequent processes in the pipeline.
+
+You can customize the behavior of the Pipe by loading the `secrets.env` file
+directly in your scripts or applications, instead of using the `load_secrets.sh`
+script. If you choose to do this, be sure to delete the `secrets.env` file after
+loading the secrets, to prevent it from being read again by subsequent
+processes in the pipeline.
 
 ## Limitations
 
 - The Pipe only supports OIDC authentication with Conjur. API key authentication
   is not supported.
-- Secrets are written to the pipeline's shared storage directory, which is
-  accessible to all steps in the pipeline. Be careful not to expose secrets to
-  unauthorized processes.
+- Secrets are written to a subdirectory of the current working directory, which is
+  accessible to all processes within the pipeline step. Be careful not to expose
+  secrets to unauthorized processes.
 - Conjur variable names will be converted to environment variable names by
   removing any paths and using only the last component of the variable name. For
   example, a variable with the ID `name/of/secret1` will be available as the

@@ -74,8 +74,6 @@ if [[ ${PUBLISH_INTERNAL} = true ]]; then
   REMOTE_TAG=$VERSION
 
   tag_and_push "${IMAGE_NAME}:${SOURCE_TAG}" "${LOCAL_REGISTRY}/${IMAGE_NAME}:${REMOTE_TAG}" true
-  
-  # TODO: Remove this. Only needed for testing pre-release
   tag_and_push "${IMAGE_NAME}:${SOURCE_TAG}" "$REGISTRY/$IMAGE_NAME:edge" true
 fi
 
@@ -90,8 +88,6 @@ if [[ ${PUBLISH_EDGE} = true ]]; then
 
   for tag in "${TAGS[@]}"; do
     tag_and_push "$IMAGE_NAME:$SOURCE_TAG" "$LOCAL_REGISTRY/$IMAGE_NAME:$tag"
-    # TODO: Disable
-    tag_and_push "$IMAGE_NAME:$SOURCE_TAG" "$REGISTRY/$IMAGE_NAME:$tag"
   done
 fi
 

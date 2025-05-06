@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import shutil
 from unittest import mock
 from unittest.mock import patch
 
@@ -95,30 +96,36 @@ class TestPipe(AsyncTestCase):
             'secret3': 'value"3',
             'path/secret4': 'value\'4' # "path/" will be removed from the key
         }
-        # Mock the logger and test that it is called with the correct arguments
-        with patch('pipe.pipe.logger') as mock_logger:
-            ConjurPipe.write_secrets(secrets, '/tmp')
-            mock_logger.info.assert_called_once_with('Writing secrets to /tmp/secrets.env')
 
-        # Test default dir
-        with patch('pipe.pipe.logger') as mock_logger:
-            ConjurPipe.write_secrets(secrets)
-            mock_logger.info.assert_called_once_with(f'Writing secrets to {os.getcwd()}/secrets.env')
+        try:
+            # Mock the logger and test that it is called with the correct arguments
+            with patch('pipe.pipe.logger') as mock_logger:
+                ConjurPipe.write_secrets(secrets, '/tmp')
+                mock_logger.info.assert_called_once_with('Writing secrets to /tmp/secrets.env')
 
-        # Check that the file is written correctly
-        with open('secrets.env', 'r', encoding='utf-8') as file:
-            content = file.read()
-        self.assertEqual(content, """secret1="value 1"
+            # Test default dir
+            with patch('pipe.pipe.logger') as mock_logger:
+                ConjurPipe.write_secrets(secrets)
+                mock_logger.info.assert_called_once_with('Writing secrets to .secrets/secrets.env')
+
+            # Check that the directory is created with the correct permissions
+            self.assertTrue(os.path.exists('.secrets'))
+            self.assertEqual(oct(os.stat('.secrets').st_mode)[-3:], '700')
+
+            # Check that the file is written correctly
+            with open('.secrets/secrets.env', 'r', encoding='utf-8') as file:
+                content = file.read()
+            self.assertEqual(content, """secret1="value 1"
 secret2="value=2"
 secret3="value\\"3"
 secret4="value\'4"
 """)
 
-        # Check that the load_secrets.sh script is written correctly
-        with open('load_secrets.sh', 'r', encoding='utf-8') as file:
-            content = file.read()
-        self.assertIn('secrets.env', content)
+            # Check that the load_secrets.sh script is written correctly
+            with open('.secrets/load_secrets.sh', 'r', encoding='utf-8') as file:
+                content = file.read()
+            self.assertIn('.secrets/secrets.env', content)
 
-        # Clean up
-        os.remove('secrets.env')
-        os.remove('load_secrets.sh')
+        finally:
+            # Clean up
+            shutil.rmtree('.secrets')

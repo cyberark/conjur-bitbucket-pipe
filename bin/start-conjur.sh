@@ -79,7 +79,7 @@ main() {
   else
     # Set the Bitbucket OIDC server URL
     docker-compose exec cli conjur variable set -i conjur/authn-jwt/bitbucket/provider-uri \
-      -v "https://api.bitbucket.org/2.0/workspaces/cyberark1/pipelines-config/identity/oidc"
+      -v "https://api.bitbucket.org/2.0/workspaces/cyberark-conjur/pipelines-config/identity/oidc"
   fi
 }
 

@@ -2,7 +2,7 @@ import os
 import unittest
 from unittest.mock import patch
 
-from pipe.pipe import PipeConfig
+from pipe.pipe import DEFAULT_OUTPUT_DIR, PipeConfig
 
 
 class TestConfig(unittest.TestCase):
@@ -22,8 +22,8 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(config.conjur_account, 'myaccount')
         self.assertEqual(config.secrets, ['secret1','secret2'])
         self.assertEqual(config.conjur_service_id, 'bitbucket')
-        self.assertEqual(config.output_dir, '/tmp')
         self.assertEqual(config.jwt, 'jwt-content')
+        self.assertEqual(config.output_dir, DEFAULT_OUTPUT_DIR)
 
     @patch.dict(os.environ, {
         'CONJUR_URL': 'https://conjur.example.com',
@@ -36,8 +36,8 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(config.conjur_account, 'conjur')
         self.assertEqual(config.secrets, ['single_secret'])
         self.assertEqual(config.conjur_service_id, 'bitbucket')
-        self.assertIsNone(config.output_dir)
         self.assertEqual(config.jwt, 'jwt-content')
+        self.assertEqual(config.output_dir, DEFAULT_OUTPUT_DIR)
 
     @patch.dict(os.environ, {
         'CONJUR_URL': 'https://conjur.example.com',
@@ -52,8 +52,8 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(config.conjur_account, 'myaccount')
         self.assertEqual(config.secrets, [])
         self.assertEqual(config.conjur_service_id, 'bitbucket')
-        self.assertIsNone(config.output_dir)
         self.assertEqual(config.jwt, 'jwt-content')
+        self.assertEqual(config.output_dir, DEFAULT_OUTPUT_DIR)
 
 if __name__ == '__main__':
     unittest.main()
