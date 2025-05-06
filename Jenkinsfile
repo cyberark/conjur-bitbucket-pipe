@@ -49,7 +49,7 @@ if (params.MODE == "PROMOTE") {
   // Fetch the SSH key for the Bitbucket account from Conjur,
   // and use it push to the Bitbucket repository. Update the
   // 'main' branch and the version tag.
-  infrapool.agentSh """
+  sh """
   summon --yaml 'SSH_KEY: !var ci/bitbucket/ssh-key' bash -c 'echo $SSH_KEY > bitbucket-key'
   chmod 600 bitbucket-key
   ssh-add bitbucket-key
