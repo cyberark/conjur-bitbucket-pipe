@@ -45,27 +45,40 @@ if (params.MODE == "PROMOTE") {
     sh 'git config --global --add safe.directory ${PWD}'
   }
   release.copyEnterpriseRelease(params.VERSION_TO_PROMOTE)
-
-  // Fetch the SSH key for the Bitbucket account from Conjur,
-  // and use it push to the Bitbucket repository. Update the
-  // 'main' branch and the version tag.
-  sh """
-  summon --yaml 'SSH_KEY: !var ci/bitbucket/ssh-key' bash -c 'echo \$SSH_KEY > bitbucket-key'
-  chmod 600 bitbucket-key
-  ssh-add bitbucket-key
-
-  source_ref=\$(git rev-parse --abbrev-ref HEAD)
-  dest_ref="refs/heads/main"
-  dest_tag="refs/tags/v${params.VERSION_TO_PROMOTE}"
-  bitbucket_repo="git@bitbucket.org:cyberark-conjur/conjur-bitbucket-pipe.git"
-
-  git push -f \${bitbucket_repo} \${source_ref}:\${dest_ref}
-  git push -f \${bitbucket_repo} \${source_ref}:\${dest_tag}
   
-  rm bitbucket-key
-  """
+  node('conjur-enterprise-common-agent') {
+    stage('Promote') {
+      // Fetch the SSH key for the Bitbucket account from Conjur,
+      // and use it push to the Bitbucket repository. Update the
+      // 'main' branch and the newly released version tag.
 
-  return
+      def updatedReleaseTag = updateVersion.removeBuildVer(params.VERSION_TO_PROMOTE)
+      updatedReleaseTag = "v" + updatedReleaseTag
+
+      checkout([
+        $class: 'GitSCM',
+        branches: scm.branches,
+        doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+        extensions: [[$class: 'CloneOption', noTags: false, shallow: false, depth: 0, reference: '']],
+        userRemoteConfigs: scm.userRemoteConfigs,
+      ])
+      sh "git checkout ${updatedReleaseTag}"
+
+      sh """
+      eval \$(ssh-agent -s)
+      summon --yaml 'SSH_KEY: !file:var ci/bitbucket/ssh-key' bash -c 'cat \$SSH_KEY' | ssh-add -
+      
+      source_ref=\$(git rev-parse --abbrev-ref HEAD)
+      dest_ref="refs/heads/main"
+      dest_tag="refs/tags/${updatedReleaseTag}"
+      bitbucket_repo="git@bitbucket.org:cyberark-conjur/conjur-bitbucket-pipe.git"
+
+      git push -f \${bitbucket_repo} \${source_ref}:\${dest_ref}
+      git push -f \${bitbucket_repo} \${source_ref}:\${dest_tag}
+      """
+    }
+  }
+ return
 }
 
 pipeline {

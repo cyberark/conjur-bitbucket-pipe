@@ -2,3 +2,4 @@ venv/
 .coverage
 coverage.xml
 __pycache__/
+.secrets/

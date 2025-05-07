@@ -23,6 +23,8 @@ schema = {
     'SECRETS': { 'type': 'string', 'required': True },
 }
 
+DEFAULT_OUTPUT_DIR = os.path.join('.secrets')
+
 ACTIVATE_SCRIPT = """
 #!/usr/bin/env bash
 set -a
@@ -39,7 +41,7 @@ class PipeConfig:
     secrets: List[str]
     conjur_service_id: str
     jwt: str
-    output_dir: str = None
+    output_dir: str = DEFAULT_OUTPUT_DIR
 
     @staticmethod
     def secrets_to_list(secrets: str) -> List[str]:
@@ -64,7 +66,6 @@ class PipeConfig:
             conjur_service_id=os.getenv('CONJUR_SERVICE_ID') or PipeConfig.get_default_service_id(),
             secrets=PipeConfig.secrets_to_list(os.getenv('SECRETS')),
             jwt=os.getenv('BITBUCKET_STEP_OIDC_TOKEN'),
-            output_dir=os.getenv('BITBUCKET_PIPE_STORAGE_DIR')
         )
 
 class ConjurPipe(Pipe):
@@ -101,16 +102,20 @@ class ConjurPipe(Pipe):
     @staticmethod
     def write_secrets(secrets: dict, outdir: str = None):
         if outdir is None:
-            outdir = os.getcwd()
+            outdir = DEFAULT_OUTPUT_DIR
+
+        # Create the output directory if it doesn't exist
+        if not os.path.exists(outdir):
+            os.makedirs(outdir, 0o700)
 
         logger.info(f'Writing secrets to {outdir}/secrets.env')
 
         def opener_private(path, flags):
-            return os.open(path, flags, 0o644)
+            return os.open(path, flags, 0o600)
 
         # The activate script needs to be executable
         def opener_executable(path, flags):
-            return os.open(path, flags, 0o755)
+            return os.open(path, flags, 0o700)
 
         with open(f'{outdir}/secrets.env', 'w', encoding='utf-8', opener=opener_private) as file:
             for key in secrets:

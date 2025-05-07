@@ -25,13 +25,9 @@ pipelines:
               # These are the default values so they don't need to be set
               # CONJUR_ACCOUNT: 'conjur'
               # CONJUR_SERVICE_ID: 'bitbucket'
+          - . ./.secrets/load_secrets.sh
+          - ./e2e.sh
         after-script:
           - docker-compose logs
         services:
           - docker
-
-    - step:
-        name: 'Test secrets loading'
-        script:
-          - . /opt/atlassian/pipelines/agent/build/.bitbucket/pipelines/generated/pipeline/pipes/cyberark/conjur-bitbucket-pipe/load_secrets.sh
-          - ./bin/e2e.sh
