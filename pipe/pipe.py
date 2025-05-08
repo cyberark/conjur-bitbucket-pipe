@@ -145,7 +145,7 @@ class ConjurPipe(Pipe):
             # Ensure the truncated key is a valid shell variable name
             regex = re.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
             if not regex.match(truncated_key):
-                raise ValueError(f'Unsupported secret name {json.dumps(truncated_key)}: variable names can only include alphanumerics" + \
+                raise ValueError(f'Unsupported secret name {json.dumps(truncated_key)}: variable names can only include alphanumerics " + \
                                  "and underscores, with first char being a non-digit')
 
 if __name__ == '__main__':
