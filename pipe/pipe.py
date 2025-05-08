@@ -72,7 +72,7 @@ class ConjurPipe(Pipe):
     async def run(self):
         super().run()
 
-        logger.info('Executing the pipe...')
+        logger.info('Executing Conjur pipe...')
 
         config = PipeConfig.fetch_config_from_env()
         client = ConjurPipe.create_conjur_client(config)

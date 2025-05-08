@@ -4,6 +4,16 @@ This Pipe allows you to authenticate with Conjur and retrieve secrets from
 Conjur variables, and make them available as environment variables in your
 Bitbucket pipelines.
 
+## Certification Level
+
+![](https://img.shields.io/badge/Certification%20Level-Certified-6C757D?link=https://github.com/cyberark/community/blob/main/Conjur/conventions/certification-levels.md)
+
+This repo is a **Certified** level project. It's been reviewed by CyberArk to
+verify that it will securely work with CyberArk Enterprise as documented. In
+addition, CyberArk offers Enterprise-level support for these features. For more
+detailed information on our certification levels, see
+[our community guidelines](https://github.com/cyberark/community/blob/main/Conjur/conventions/certification-levels.md#certified).
+
 ## Requirements
 
 - A Bitbucket Cloud repository with a `bitbucket-pipelines.yml` file
@@ -150,6 +160,10 @@ development workflows, please see our [contributing guide](CONTRIBUTING.md).
 ## Support
 
 Please open an issue in this repository for any questions or issues you may have. For general support, please visit the [CyberArk Commons](https://discuss.cyberarkcommons.org/) forum.
+
+Note: Only the [GitHub repository](http://github.com/cyberark/conjur-bitbucket-pipe) is actively monitored.
+Issues opened in the mirrored repository on [Bitbucket](https://bitbucket.org/cyberark-conjur/conjur-bitbucket-pipe/)
+will not be addressed.
 
 ## License
 

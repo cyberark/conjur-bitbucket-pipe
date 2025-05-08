@@ -5,6 +5,11 @@ In particular, before contributing please review our
 [contributor licensing guide](https://github.com/cyberark/community/blob/main/CONTRIBUTING.md#when-the-repo-does-not-include-the-cla)
 to ensure your contribution is compliant with our contributor license agreements.
 
+Note: Only the [GitHub repository](http://github.com/cyberark/conjur-bitbucket-pipe)
+for this project is actively monitored. Issues and pull requests opened in the mirrored
+repository on [Bitbucket](https://bitbucket.org/cyberark-conjur/conjur-bitbucket-pipe/)
+will not be addressed.
+
 ## Table of Contents
 
 - [Development](#development)
@@ -20,23 +25,16 @@ To spin up a development environment with Conjur OSS, run `./bin/dev.sh`. When
 the script completes, you'll be in a shell inside the pipe container. You can
 now run the pipe using `python pipe/pipe.py`.
 
-<!-- TODO -->
-Note: Currently the `BITBUCKET_STEP_OIDC_TOKEN` environment variable will be set
-to a dummy value which will cause the pipe to fail on the authentication step.
-To work around this, you can set the `BITBUCKET_STEP_OIDC_TOKEN` environment
-variable to a valid value for the JWT server you are using. This will be
-improved when the Conjur Bitbucket authenticator is implemented, and we can
-create a mock OIDC server that will return a valid token.
-
 ## Testing
 
 ### Unit tests
 
 To run the unit test in a container, run `./bin/test.sh`.
 
-<!-- ### Integration tests
-TODO
--->
+### Integration tests
+
+We have a basic happy path integration test that runs on the Bitbucket
+repository. See [bitbucket-pipelines.yml](bitbucket-pipelines.yml).
 
 ## Releases
 
