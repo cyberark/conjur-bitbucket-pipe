@@ -44,7 +44,6 @@ if (params.MODE == "PROMOTE") {
     // Resolve ownership issue before promotion
     sh 'git config --global --add safe.directory ${PWD}'
   }
-  release.copyEnterpriseRelease(params.VERSION_TO_PROMOTE)
   
   node('conjur-enterprise-common-agent') {
     stage('Promote') {
@@ -78,7 +77,9 @@ if (params.MODE == "PROMOTE") {
       """
     }
   }
- return
+
+  release.copyEnterpriseRelease(params.VERSION_TO_PROMOTE)
+  return
 }
 
 pipeline {
