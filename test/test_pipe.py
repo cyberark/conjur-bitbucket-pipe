@@ -94,7 +94,10 @@ class TestPipe(AsyncTestCase):
             'secret1': 'value 1',
             'secret2': 'value=2',
             'secret3': 'value"3',
-            'path/secret4': 'value\'4' # "path/" will be removed from the key
+            'path/secret4': 'value\'4', # "path/" will be removed from the key
+            'path/multiline': """ multiline
+string
+"""
         }
 
         try:
@@ -119,6 +122,7 @@ class TestPipe(AsyncTestCase):
 secret2="value=2"
 secret3="value\\"3"
 secret4="value\'4"
+multiline=" multiline\\nstring\\n"
 """)
 
             # Check that the load_secrets.sh script is written correctly
