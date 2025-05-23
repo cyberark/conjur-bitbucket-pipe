@@ -51,8 +51,8 @@ if (params.MODE == "PROMOTE") {
       // and use it push to the Bitbucket repository. Update the
       // 'main' branch and the newly released version tag.
 
-      def updatedReleaseTag = updateVersion.removeBuildVer(params.VERSION_TO_PROMOTE)
-      updatedReleaseTag = "v" + updatedReleaseTag
+      def updatedReleaseTagWithoutPrefix = updateVersion.removeBuildVer(params.VERSION_TO_PROMOTE)
+      updatedReleaseTag = "v" + updatedReleaseTagWithoutPrefix
 
       checkout([
         $class: 'GitSCM',
@@ -69,7 +69,7 @@ if (params.MODE == "PROMOTE") {
       
       source_ref=\$(git rev-parse --abbrev-ref HEAD)
       dest_ref="refs/heads/main"
-      dest_tag="refs/tags/${updatedReleaseTag}"
+      dest_tag="refs/tags/${updatedReleaseTagWithoutPrefix}" # Bitbucket Pipes don't support the 'v' prefix
       bitbucket_repo="git@bitbucket.org:cyberark-conjur/conjur-bitbucket-pipe.git"
 
       git push -f \${bitbucket_repo} \${source_ref}:\${dest_ref}
