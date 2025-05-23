@@ -87,7 +87,7 @@ conjur variable set -i conjur/authn-jwt/bitbucket/token-app-property -v "reposit
 conjur variable set -i conjur/authn-jwt/bitbucket/identity-path -v "bitbucket-pipelines"
 ```
 
-## Usage
+## YAML Definition
 
 To use this Pipe in your Bitbucket pipeline, add the following to the
 `bitbucket-pipelines.yml` file:
