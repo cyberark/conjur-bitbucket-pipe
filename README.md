@@ -98,7 +98,7 @@ To use this Pipe in your Bitbucket pipeline, add the following to the
   name: 'Retrieve secrets from Conjur'
   oidc: true # This instructs Bitbucket to use provide OIDC credentials to the Pipe
   script:
-    - pipe: docker://cyberark/conjur-bitbucket-pipe:edge # TODO: This will change when the Pipe is published
+    - pipe: cyberark-conjur/conjur-bitbucket-pipe:0.0.7
       variables:
         CONJUR_URL: 'https://<your-conjur-url>'
         CONJUR_ACCOUNT: '<your-conjur-account>' # Defaults to 'conjur'
