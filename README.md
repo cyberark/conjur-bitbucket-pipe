@@ -26,6 +26,11 @@ Example policy for the Bitbucket authenticator:
 ```yaml
 
 - !policy
+  # If you plan to use this integration with multiple Bitbucket workspaces,
+  # you will need to create a separate authenticator for each workspace.
+  # In that case, you can copy this policy and change the `id` to
+  # `conjur/authn-jwt/bitbucket-<workspace-name>` where `<workspace-name>`
+  # is the name of your Bitbucket workspace.
   id: conjur/authn-jwt/bitbucket
   body:
     - !webservice
@@ -48,7 +53,11 @@ Example policy for the Bitbucket authenticator:
 
     - &hosts
       - !host
-        id: "{<bitbucket-repository-uuid>}" # Replace this with your repositoryUuid
+        # Replace this with your repositoryUuid. You must include the curly braces and double quotes!
+        id: "{<bitbucket-repository-uuid>}"
+        annotations:
+          authn-jwt/bitbucket/repositoryUuid: "{<bitbucket-repository-uuid>}" # Replace this as well
+
       # Add more hosts here for other Bitbucket repositories if needed
     
     - !grant
@@ -98,7 +107,7 @@ To use this Pipe in your Bitbucket pipeline, add the following to the
   name: 'Retrieve secrets from Conjur'
   oidc: true # This instructs Bitbucket to use provide OIDC credentials to the Pipe
   script:
-    - pipe: cyberark-conjur/conjur-bitbucket-pipe:0.0.7
+    - pipe: cyberark-conjur/conjur-bitbucket-pipe:0.0.8
       variables:
         CONJUR_URL: 'https://<your-conjur-url>'
         CONJUR_ACCOUNT: '<your-conjur-account>' # Defaults to 'conjur'

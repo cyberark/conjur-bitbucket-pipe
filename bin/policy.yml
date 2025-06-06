@@ -4,8 +4,8 @@
   body:
     - !webservice
     - !variable provider-uri
-    - !variable token-app-property # This can be "pipelineUuid", "stepUuid", or one of the other claims provided in the Bitbucket JWT
-    - !variable identity-path # This can be "conjur/authn-jwt/bitbucket/pipelines"
+    - !variable token-app-property
+    - !variable identity-path
     
     - !group authenticatable
     - !permit
