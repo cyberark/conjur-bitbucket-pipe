@@ -64,6 +64,10 @@ step and promote the desired release build from the main branch.
    or manually trigger aditional releases as needed.
 1. Reference the [internal automated release doc](https://github.com/conjurinc/docs/blob/master/reference/infrastructure/automated_releases.md#release-and-promotion-process)
 for releasing and promoting.
+1. **After releasing a new version, create a PR to update the Bitbucket official
+   pipes repository with the new version. This is done by creating a PR
+   against the [bitbucket.org/bitbucketpipelines/official-pipes](https://bitbucket.org/bitbucketpipelines/official-pipes)
+   repository ([example PR](https://bitbucket.org/bitbucketpipelines/official-pipes/pull-requests/845)).**
 
 ## Contributing workflow
 
