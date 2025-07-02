@@ -80,7 +80,7 @@ Example policy for the Bitbucket authenticator:
 
 # Add the pipelines to the group that can authenticate using authn-jwt/bitbucket
 - !grant
-  role: !group authn-jwt/bitbucket/ci/authenticatable
+  role: !group authn-jwt/bitbucket/authenticatable
   members: !group bitbucket-pipelines
 ```
 
