@@ -11,5 +11,5 @@ docker run --rm \
   -t \
   -v "$(pwd):/tests" \
   -w /tests \
-  python:3-slim \
-    bash -c "$test_script"    
+  python:3.13-slim \
+    bash -c "$test_script"
