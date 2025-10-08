@@ -7,7 +7,7 @@
 #   mkdir /workspace && chown pipe:pipe /workspace
 # USER pipe
 
-FROM python:3-slim
+FROM python:3.13-slim
 LABEL maintainer="CyberArk Software Ltd."
 
 RUN mkdir /workspace
