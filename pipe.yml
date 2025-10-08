@@ -1,6 +1,6 @@
-name: Conjur Pipe
+name: CyberArk Secrets Manager Pipe
 image: cyberark/conjur-bitbucket-pipe:latest
-description: Fetch secrets from Conjur
+description: Fetch secrets from CyberArk Secrets Manager
 category: Security
 repository: https://bitbucket.org/cyberark-conjur/conjur-bitbucket-pipe
 vendor:
@@ -14,3 +14,6 @@ tags:
     - conjur
     - secrets
     - credentials
+    - cyberark
+    - secrets-manager
+    - cybr
