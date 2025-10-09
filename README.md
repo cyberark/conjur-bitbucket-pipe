@@ -1,7 +1,7 @@
-# Conjur Bitbucket Pipe
+# CyberArk Secrets Manager Pipe
 
-This Pipe allows you to authenticate with Conjur and retrieve secrets from
-Conjur variables, and make them available as environment variables in your
+This Pipe allows you to authenticate with CyberArk Secrets Manager and retrieve secrets from
+Secrets Manager variables, and make them available as environment variables in your
 Bitbucket pipelines.
 
 ## Certification Level
@@ -17,7 +17,7 @@ detailed information on our certification levels, see
 ## Requirements
 
 - A Bitbucket Cloud repository with a `bitbucket-pipelines.yml` file
-- Conjur Open Source, Enterprise, or Cloud
+- CyberArk Secrets Manager, Self-Hosted; CyberArk Secrets Manager, SaaS; or Conjur OSS
 
 ## Authenticator setup
 
@@ -84,7 +84,7 @@ Example policy for the Bitbucket authenticator:
   members: !group bitbucket-pipelines
 ```
 
-After loading this policy into Conjur, add values for the authenticator variables:
+After loading this policy into CyberArk Secrets Manager, add values for the authenticator variables:
 
 ```bash
 # Replace `<workspace-name>` with your Bitbucket workspace name
@@ -104,22 +104,22 @@ To use this Pipe in your Bitbucket pipeline, add the following to the
 ```yaml
 
 - step:
-  name: 'Retrieve secrets from Conjur'
+  name: 'Retrieve secrets from CyberArk Secrets Manager'
   oidc: true # This instructs Bitbucket to use provide OIDC credentials to the Pipe
   script:
     - pipe: cyberark-conjur/conjur-bitbucket-pipe:0.0.8
       variables:
         CONJUR_URL: 'https://<your-conjur-url>'
         CONJUR_ACCOUNT: '<your-conjur-account>' # Defaults to 'conjur'
-        CONJUR_SERVICE_ID: 'bitbucket' # Service ID of the JWT Authenticator in Conjur. Defaults to 'bitbucket'
-        SECRETS: 'bitbucket-pipelines/secret1,bitbucket-pipelines/secret2' # Comma-separated list of Conjur variable IDs
+        CONJUR_SERVICE_ID: 'bitbucket' # Service ID of the JWT Authenticator in CyberArk Secrets Nabager. Defaults to 'bitbucket'
+        SECRETS: 'bitbucket-pipelines/secret1,bitbucket-pipelines/secret2' # Comma-separated list of CyberArk Secrets Manager variable IDs
     - . ./.secrets/load_secrets.sh
     # Now you can access the secrets as environment variables
     # For example,
     - echo "Secret 1: $secret1"
 ```
 
-When the Pipe is run, it will authenticate with Conjur using the OIDC
+When the Pipe is run, it will authenticate with CyberArk Secrets Manager using the OIDC
 credentials provided by Bitbucket, and retrieve the secrets specified in the
 `SECRETS` variable. The secrets will be written to a `.secrets` folder under the
 current working directory, and can be accessed within the same step of the
@@ -147,12 +147,12 @@ processes in the pipeline.
 
 ## Limitations
 
-- The Pipe only supports OIDC authentication with Conjur. API key authentication
+- The Pipe only supports OIDC authentication with Secrets Manager. API key authentication
   is not supported.
 - Secrets are written to a subdirectory of the current working directory, which is
   accessible to all processes within the pipeline step. Be careful not to expose
   secrets to unauthorized processes.
-- Conjur variable names will be converted to environment variable names by
+- Secrets Manager variable names will be converted to environment variable names by
   removing any paths and using only the last component of the variable name. For
   example, a variable with the ID `name/of/secret1` will be available as the
   environment variable `secret1`. If multiple variables have the same last

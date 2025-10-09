@@ -8,7 +8,7 @@ USE_MOCK_JWT_SERVER=false
 
 print_help() {
   cat << EOF
-Starts a Conjur environment for development of the pipe.
+Starts a Conjur OSS environment for development of the pipe.
 
 Usage: start [options]
     --mock       Starts with a mock JWT server. This allows you to test
